@@ -349,6 +349,11 @@ enum ContentType {
 - Toast notifications for actions
 - Loading skeletons (not spinners) for perceived performance
 
+### Screenshots
+See those screenshots for the main dashboard design. It does not have to be pixel perfect. Use it as a reference.
+`@public/screenshots/dashboard-ui-main.png`
+`@public/screenshots/dashboard-ui-drawer.png`
+
 ---
 
 ## 8. Type Reference — Colors & Icons

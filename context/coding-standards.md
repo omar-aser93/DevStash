@@ -52,8 +52,8 @@ Example v4 configuration:
 
 - Components: `components/[feature]/ComponentName.tsx`
 - Pages: `app/[route]/page.tsx`
-- Server Actions: `actions/[feature].ts`
-- Types: `types/[feature].ts`
+- Server Actions: `lib/actions/[feature].ts`
+- Types: `lib/types/[feature].ts`
 - Lib/Utils: `lib/[utility].ts`
 
 ## Naming
