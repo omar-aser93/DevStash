@@ -4,7 +4,7 @@ import { SidebarMobile } from "./SidebarMobile";
 
 export function Navbar() {
   return (
-    <header className="flex h-16 items-center border-b px-4 sm:px-6">
+    <header className="sticky top-0 z-50 bg-background flex h-16 items-center border-b px-4 sm:px-6">
 
       {/* Left */}      
       <div className="flex flex-1 items-center gap-3">

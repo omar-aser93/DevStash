@@ -33,7 +33,8 @@ export function SidebarContent({ collapsed, setCollapsed, mobile = false }: { co
   const favoriteCollections = collections.filter((collection) => collection.isFavorite );
   const recentCollections = [...collections].sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt)).slice(0, 3);
  
-  const [collectionsOpen, setCollectionsOpen] = useState(true);
+  const [typesOpen, setTypesOpen] = useState(true);
+  const [collectionsOpen, setCollectionsOpen] = useState(true);  
   return (
     <div className="sidebar-navigation flex h-full flex-col bg-muted/20">
       <div className="sidebar-navigation-header flex h-16 items-center justify-between border-b px-4">
@@ -48,8 +49,11 @@ export function SidebarContent({ collapsed, setCollapsed, mobile = false }: { co
       </div>
 
       <nav className="min-h-0 flex-1 overflow-y-auto p-3" aria-label="Dashboard navigation" >
-       {!collapsed && ( <SidebarSectionLabel>Types</SidebarSectionLabel> )}  
-        <div className="space-y-1">
+        {!collapsed && ( <Button variant="ghost" className={`w-full flex items-center justify-between border-0 ${typesOpen ? "mb-2" : "mb-0"}`} onClick={() => setTypesOpen((v) => !v)}>
+          Types
+          <ChevronDown className={cn( "transition-transform", typesOpen && "rotate-180" )} />
+        </Button> )} 
+        {typesOpen && <div className="space-y-1">
           {itemTypes.map((type) => {
             const Icon = TYPE_ICONS[type.slug];
             const itemCount = items.filter((item) => item.itemTypeId === type.id,).length;
@@ -65,7 +69,7 @@ export function SidebarContent({ collapsed, setCollapsed, mobile = false }: { co
               </a>
             );
           })}
-        </div>
+        </div> }
 
         {!collapsed && (<> 
         <div className="my-5 border-t" />
