@@ -1,31 +1,18 @@
 import { Star } from "lucide-react";
-import { MockCollection, MockItemType } from "@/lib/mock-data";
-import { getItemTypeStyle, ItemTypeIcon, ItemTypeStyle } from "@/components/dashboard/dashboard-utils";
-import { cn } from "@/lib/utils";
+import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
+import type { CollectionWithMeta } from "@/lib/queries/collections";
 
 export interface RecentCollectionCardProps {
-  collection: MockCollection;
-  itemCount: number;
-  containedTypes?: MockItemType[];
-  style: ItemTypeStyle;
+  collection: CollectionWithMeta;
 }
 
-export function RecentCollectionCard({
-  collection,
-  itemCount,
-  containedTypes = [],
-  style,
-}: RecentCollectionCardProps) {
-  const borderLeftColor = style.color;
+export function RecentCollectionCard({ collection }: RecentCollectionCardProps) {
+  const styles = getColorStyles(collection.dominantColor);
 
   return (
     <div
-      className={cn(
-        "group p-4 rounded-xl border border-l-4 bg-card/30 flex flex-col justify-between min-h-35 hover:-translate-y-0.5 duration-200",
-        style.bg,
-        style.borderLeft
-      )}
-      style={borderLeftColor ? { borderLeftColor } : undefined}
+      className="group p-4 rounded-xl border border-l-4 border-muted/50 bg-card/30 flex flex-col justify-between min-h-35 transition-all hover:-translate-y-0.5 hover:shadow-md duration-200"
+      style={{ ...styles.bg, ...styles.borderLeft }}
     >
       <div className="space-y-1">
         <div className="flex items-start justify-between gap-2">
@@ -44,7 +31,7 @@ export function RecentCollectionCard({
       </div>
       <div className="flex items-center justify-between mt-4">
         <span className="text-[10px] text-muted-foreground font-medium">
-          {itemCount} {itemCount === 1 ? "item" : "items"}
+          {collection.itemCount} {collection.itemCount === 1 ? "item" : "items"}
         </span>
 
         {/* Small icons for contained item types instead of "Open" */}
@@ -53,21 +40,18 @@ export function RecentCollectionCard({
           className="flex items-center gap-1.5 p-1 -m-1 rounded-md hover:bg-muted/20 transition-colors"
           title="Open collection"
         >
-          {containedTypes.length > 0 ? (
+          {collection.containedTypes.length > 0 ? (
             <div className="flex items-center gap-1">
-              {containedTypes.map((type) => {
-                const typeStyle = getItemTypeStyle(type.slug);
+              {collection.containedTypes.map((type) => {
+                const typeStyles = getColorStyles(type.color);
                 return (
                   <span
                     key={type.id}
-                    className={cn(
-                      "p-1 rounded-md transition-transform hover:scale-110 flex items-center justify-center",
-                      typeStyle.bg,
-                      typeStyle.text
-                    )}
+                    className="p-1 rounded-md transition-transform hover:scale-110 flex items-center justify-center"
+                    style={{ ...typeStyles.bg, ...typeStyles.text }}
                     title={type.name}
                   >
-                    <ItemTypeIcon slug={type.slug} className="size-3.5" />
+                    <ItemTypeIcon name={type.icon} className="size-3.5" />
                   </span>
                 );
               })}

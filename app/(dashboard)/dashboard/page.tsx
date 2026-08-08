@@ -1,7 +1,8 @@
 import { Metadata } from "next";
-import { Folder, Database, Star, Pin, Clock, ArrowRight} from "lucide-react";
-import { collections, items, itemTypes, currentUser } from "@/lib/mock-data";
-import { getDominantTypeStyles, getCollectionItemTypes } from "@/components/dashboard/dashboard-utils";
+import { Folder, Database, Star, Pin, Clock, ArrowRight } from "lucide-react";
+import { getCurrentUser, getCurrentUserId } from "@/lib/session";
+import { getRecentCollections, getCollectionStats } from "@/lib/queries/collections";
+import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/queries/items";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentCollectionCard } from "@/components/dashboard/RecentCollectionCard";
 import { PinnedItemCard } from "@/components/dashboard/PinnedItemCard";
@@ -12,21 +13,18 @@ export const metadata: Metadata = {
   description: "Browse and organize your developer knowledge in DevStash.",
 };
 
-export default function DashboardPage() {
-  // Sort collections by updatedAt to get recent collections
-  const recentCollections = [...collections].sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt)).slice(0, 3);
+export default async function DashboardPage() {
+  const userId = await getCurrentUserId();
 
-  // Get pinned items
-  const pinnedItems = items.filter((item) => item.isPinned);
-
-  // Get 10 recent items
-  const recentItems = [...items].sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt)).slice(0, 10);
-
-  // Stat counts
-  const totalItems = items.length;
-  const totalCollections = collections.length;
-  const favoriteItemsCount = items.filter((item) => item.isFavorite).length;
-  const favoriteCollectionsCount = collections.filter((col) => col.isFavorite).length;
+  const [currentUser, recentCollections, collectionStats, pinnedItems, recentItems, itemStats] =
+    await Promise.all([
+      getCurrentUser(userId),
+      getRecentCollections(userId, 6),
+      getCollectionStats(userId),
+      getPinnedItems(userId, 4),
+      getRecentItems(userId, 10),
+      getItemStats(userId),
+    ]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-background/50 p-6 space-y-8">
@@ -40,31 +38,31 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatsCard 
+        <StatsCard
           label="Total Items"
-          value={totalItems}
+          value={itemStats.totalItems}
           icon={Database}
           iconBgClass="bg-blue-500/10"
           iconColorClass="text-blue-400"
         />
-        <StatsCard 
+        <StatsCard
           label="Collections"
-          value={totalCollections}
+          value={collectionStats.totalCollections}
           icon={Folder}
           iconBgClass="bg-indigo-500/10"
           iconColorClass="text-indigo-400"
         />
-        <StatsCard 
+        <StatsCard
           label="Favorite Items"
-          value={favoriteItemsCount}
+          value={itemStats.favoriteItemsCount}
           icon={Star}
           iconBgClass="bg-amber-500/10"
           iconColorClass="text-amber-400"
           iconFillClass="fill-amber-400/20"
         />
-        <StatsCard 
+        <StatsCard
           label="Favorite Collections"
-          value={favoriteCollectionsCount}
+          value={collectionStats.favoriteCollectionsCount}
           icon={Star}
           iconBgClass="bg-pink-500/10"
           iconColorClass="text-pink-400"
@@ -83,55 +81,36 @@ export default function DashboardPage() {
                 <Folder className="size-4 text-muted-foreground" />
                 Recent Collections
               </h2>
-              <a href="/collections" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              <a
+                href="/collections"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
                 View all <ArrowRight className="size-3" />
               </a>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {recentCollections.map((collection) => {
-                const style = getDominantTypeStyles(collection.id, items, itemTypes);
-                const colItemsCount = items.filter((it) => it.collectionIds.includes(collection.id)).length;
-                const containedTypes = getCollectionItemTypes(collection.id, items, itemTypes);
-                return (
-                  <RecentCollectionCard 
-                    key={collection.id}
-                    collection={collection}
-                    itemCount={colItemsCount}
-                    containedTypes={containedTypes}
-                    style={style}
-                  />
-                );
-              })}
+              {recentCollections.map((collection) => (
+                <RecentCollectionCard key={collection.id} collection={collection} />
+              ))}
             </div>
           </section>
 
-          {/* Pinned Items */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
-                <Pin className="size-4 text-muted-foreground" />
-                Pinned Items
-              </h2>
-            </div>
-            {pinnedItems.length === 0 ? (
-              <div className="p-8 rounded-xl border border-dashed text-center">
-                <p className="text-sm text-muted-foreground">No pinned items yet. Pin items to access them quickly here.</p>
+          {/* Pinned Items — render nothing if there are none */}
+          {pinnedItems.length > 0 && (
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+                  <Pin className="size-4 text-muted-foreground" />
+                  Pinned Items
+                </h2>
               </div>
-            ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {pinnedItems.map((item) => {
-                  const type = itemTypes.find((t) => t.id === item.itemTypeId);
-                  return (
-                    <PinnedItemCard 
-                      key={item.id}
-                      item={item}
-                      itemType={type}
-                    />
-                  );
-                })}
+                {pinnedItems.map((item) => (
+                  <PinnedItemCard key={item.id} item={item} />
+                ))}
               </div>
-            )}
-          </section>
+            </section>
+          )}
         </div>
 
         {/* Right Column: 10 Recent Items List */}
@@ -147,17 +126,9 @@ export default function DashboardPage() {
               <p className="text-xs text-muted-foreground text-center py-6">No items created yet.</p>
             ) : (
               <div className="divide-y divide-muted/50 space-y-3">
-                {recentItems.map((item, idx) => {
-                  const type = itemTypes.find((t) => t.id === item.itemTypeId);
-                  return (
-                    <RecentItemRow
-                      key={item.id}
-                      item={item}
-                      itemType={type}
-                      isFirst={idx === 0}
-                    />
-                  );
-                })}
+                {recentItems.map((item, idx) => (
+                  <RecentItemRow key={item.id} item={item} isFirst={idx === 0} />
+                ))}
               </div>
             )}
           </div>

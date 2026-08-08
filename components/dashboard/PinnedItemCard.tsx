@@ -1,32 +1,24 @@
 import { Star } from "lucide-react";
-import { MockItem, MockItemType } from "@/lib/mock-data";
-import { getItemTypeStyle, ItemTypeIcon } from "@/components/dashboard/dashboard-utils";
-import { cn } from "@/lib/utils";
+import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
+import type { ItemWithType } from "@/lib/queries/items";
 
 export interface PinnedItemCardProps {
-  item: MockItem;
-  itemType?: MockItemType;
+  item: ItemWithType;
 }
 
-export function PinnedItemCard({ item, itemType }: PinnedItemCardProps) {
-  const typeSlug = itemType?.slug || "snippets";
-  const style = getItemTypeStyle(typeSlug);
-  const borderLeftColor = itemType?.color || style.color;
+export function PinnedItemCard({ item }: PinnedItemCardProps) {
+  const styles = getColorStyles(item.itemType.color);
 
   return (
     <div
-      className={cn(
-        "group p-4 rounded-xl border border-l-4 bg-card/20 flex flex-col justify-between min-h-35 hover:bg-card/40 transition-colors",
-        style.border,
-        style.borderLeft
-      )}
-      style={borderLeftColor ? { borderLeftColor } : undefined}
+      className="group p-4 rounded-xl border border-l-4 border-muted/50 bg-card/20 flex flex-col justify-between min-h-35 hover:bg-card/40 transition-colors"
+      style={styles.borderLeft}
     >
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className={cn("p-1.5 rounded-md", style.bg, style.text)}>
-              <ItemTypeIcon slug={typeSlug} className="size-3.5" />
+            <span className="p-1.5 rounded-md" style={{ ...styles.bg, ...styles.text }}>
+              <ItemTypeIcon name={item.itemType.icon} className="size-3.5" />
             </span>
             <h3 className="font-medium text-sm truncate group-hover:text-foreground transition-colors">
               {item.title}
@@ -55,9 +47,9 @@ export function PinnedItemCard({ item, itemType }: PinnedItemCardProps) {
           </div>
         )}
         <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t pt-2 border-muted/50">
-          <span>{itemType?.name}</span>
+          <span>{item.itemType.name}</span>
           <a
-            href={`/items/${typeSlug}?id=${item.id}`}
+            href={`/items/${item.itemType.name}?id=${item.id}`}
             className="font-semibold hover:text-foreground hover:underline"
           >
             View details
