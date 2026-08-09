@@ -1,6 +1,6 @@
 import { neonConfig } from '@neondatabase/serverless';
 import { PrismaNeon } from '@prisma/adapter-neon';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../prisma/generated/prisma/client';
 import ws from 'ws';
 
 // Enable WebSocket support in Node.js runtime environment for Neon serverless pooler
