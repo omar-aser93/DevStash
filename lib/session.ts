@@ -8,10 +8,13 @@ import { prisma } from "@/lib/prisma";
  * demo user so the dashboard can be driven by real DB data.
  */
 export async function getCurrentUserId(): Promise<string> {
-  const demoUser = await prisma.user.findUniqueOrThrow({
+  const demoUser = await prisma.user.findUnique({
     where: { email: "demo@devstash.io" },
     select: { id: true },
   });
+  if (!demoUser) {
+    throw new Error('Demo user "demo@devstash.io" does not exist. Run the database seed.'  );
+  }
   return demoUser.id;
 }
 
