@@ -107,7 +107,7 @@ export const getItemTypesWithCounts = cache(async (userId: string): Promise<Item
   const [itemTypes, counts] = await Promise.all([
     prisma.itemType.findMany({
       where: { OR: [{ isSystem: true }, { userId }] },
-      orderBy: { name: "asc" },
+      orderBy: { name: "desc" },
     }),
     prisma.item.groupBy({
       by: ["itemTypeId"],

@@ -1,6 +1,3 @@
-// // temp untill auth is wired up
-// export const dynamic = "force-dynamic";
-
 import { Metadata } from "next";
 import { Folder, Database, Star, Pin, Clock, ArrowRight } from "lucide-react";
 import { getCurrentUser, getCurrentUserId } from "@/lib/session";
