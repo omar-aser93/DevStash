@@ -84,17 +84,23 @@ export default async function DashboardPage() {
                 <Folder className="size-4 text-muted-foreground" />
                 Recent Collections
               </h2>
-              <a
-                href="/collections"
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-              >
+              <a href="/collections" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1" >
                 View all <ArrowRight className="size-3" />
               </a>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {recentCollections.map((collection) => (
-                <RecentCollectionCard key={collection.id} collection={collection} />
-              ))}
+
+            <div className="rounded-xl border bg-card/30 p-4">
+              {recentCollections.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-6">
+                  No collections created yet.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  {recentCollections.map((collection) => (
+                    <RecentCollectionCard key={collection.id} collection={collection} />
+                  ))}
+                </div>
+              )}
             </div>
           </section>
 
