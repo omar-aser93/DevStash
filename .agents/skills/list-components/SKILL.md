@@ -7,7 +7,7 @@ description: List project components
 
 List all React component files (.tsx, .ts, .jsx, .js) in the components folder.
 
-If the first word of the request is provided (e.g. "ui"), only list files in that subdirectory.
+If the first word of the request (after /skill) is provided (e.g. "ui"), only list files in that subdirectory.
 
 ## Output Format
 

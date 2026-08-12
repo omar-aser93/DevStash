@@ -1,6 +1,6 @@
 # Current Feature
 
-convert static dashboard to fetch dynamic
+Fix dashboard data scoping and lint exclusions
 
 ## Status
 
@@ -10,7 +10,9 @@ completed
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Scope tags to their owning user with a compound unique name constraint.
+- Bound dashboard collection queries and use database relation counts.
+- Exclude generated and auxiliary directories from ESLint.
 
 
 ## Notes
@@ -28,4 +30,5 @@ completed
 - Completed Dashboard UI Phase 3: built main dashboard layout with stats cards, recent collections section (with dominant item-type colored left borders and contained item-type icons), pinned items section (with item-type colored left borders), and 10 recent items list. Verified with `npm run build`.
 - Completed Prisma 7 setup with Neon PostgreSQL database connection. Verified with `npm run dev`.
 - completed creating queries for items and collections. and converted static dashboard & sidebar to dynamiclly fetched data.
+- Fixed user-scoped tags, bounded dashboard collection queries, and added ESLint ignores for generated and auxiliary directories. Verified with Prisma schema validation, focused ESLint, and `tsc --noEmit`.
 

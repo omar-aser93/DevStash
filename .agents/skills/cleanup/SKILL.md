@@ -17,7 +17,7 @@ Review the codebase for cleanup tasks:
 
 **Mode: $ARGUMENTS** 
 
-argument is first word after /skill.. If no argument or argument is "check":
+argument is first word after /skill .. If no argument or argument is "check":
 
 - Only report findings, don't modify anything
 - List what WOULD be cleaned up

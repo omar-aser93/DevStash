@@ -22,6 +22,10 @@ export interface CollectionWithMeta {
 }
 
 const DEFAULT_COLOR = "#6b7280";
+const RECENT_COLLECTION_LIMIT = 6;
+const COLLECTION_TYPE_SAMPLE_LIMIT = 24;
+const SIDEBAR_FAVORITES_LIMIT = 6;
+const SIDEBAR_RECENT_LIMIT = 3;
 
 /**
  * Fetches a user's most recently updated collections, including a count of
@@ -36,12 +40,25 @@ export async function getRecentCollections(
   const collections = await prisma.collection.findMany({
     where: { userId },
     orderBy: { updatedAt: "desc" },
-    take: limit,
-    include: {
+    take: Math.min(Math.max(limit, 1), RECENT_COLLECTION_LIMIT),
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
+      createdAt: true,
+      updatedAt: true,
+      _count: { select: { items: true } },
       items: {
-        include: {
+        orderBy: { addedAt: "desc" },
+        take: COLLECTION_TYPE_SAMPLE_LIMIT,
+        select: {
           item: {
-            include: { itemType: true },
+            select: {
+              itemType: {
+                select: { id: true, name: true, icon: true, color: true },
+              },
+            },
           },
         },
       },
@@ -49,14 +66,13 @@ export async function getRecentCollections(
   });
 
   return collections.map((collection) => {
-    const items = collection.items.map((itemCollection) => itemCollection.item);
-
-    // Tally item types to find the dominant one for this collection.
+    // A bounded, newest-first sample supplies the card's visual type indicators;
+    // the database count below remains exact for collections of any size.
     const typeCounts = new Map<
       string,
       { count: number; type: CollectionItemType }
     >();
-    items.forEach((item) => {
+    collection.items.forEach(({ item }) => {
       const key = item.itemType.id;
       const existing = typeCounts.get(key);
       typeCounts.set(key, {
@@ -88,7 +104,7 @@ export async function getRecentCollections(
       isFavorite: collection.isFavorite,
       createdAt: collection.createdAt,
       updatedAt: collection.updatedAt,
-      itemCount: items.length,
+      itemCount: collection._count.items,
       containedTypes,
       dominantColor,
     };
@@ -114,15 +130,26 @@ export interface SidebarCollection {
  * Lightweight collection lists for the sidebar: favorited collections, and the 3 most recently updated. No item counts or type breakdown needed here.
  * we use cache here because this will be called on more than one place on page load
  */
-export const getSidebarCollections = cache(async (userId: string) : Promise<{ favorites: SidebarCollection[]; recent: SidebarCollection[] }> => {  
-  const collections = await prisma.collection.findMany({
-    where: { userId },
-    orderBy: { updatedAt: "desc" },
-    select: { id: true, name: true, isFavorite: true },
-  });
+export const getSidebarCollections = cache(
+  async (
+    userId: string
+  ): Promise<{ favorites: SidebarCollection[]; recent: SidebarCollection[] }> => {
+    const collectionSelect = { id: true, name: true } as const;
+    const [favorites, recent] = await Promise.all([
+      prisma.collection.findMany({
+        where: { userId, isFavorite: true },
+        orderBy: { updatedAt: "desc" },
+        take: SIDEBAR_FAVORITES_LIMIT,
+        select: collectionSelect,
+      }),
+      prisma.collection.findMany({
+        where: { userId },
+        orderBy: { updatedAt: "desc" },
+        take: SIDEBAR_RECENT_LIMIT,
+        select: collectionSelect,
+      }),
+    ]);
 
-  const favorites = collections.filter((c) => c.isFavorite).map(({ id, name }) => ({ id, name }));
-  const recent = collections.slice(0, 3).map(({ id, name }) => ({ id, name }));
-
-  return { favorites, recent };
-});
+    return { favorites, recent };
+  }
+);
