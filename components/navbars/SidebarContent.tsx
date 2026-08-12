@@ -86,7 +86,7 @@ export function SidebarContent({collapsed, setCollapsed, mobile = false, current
               <div className="sidebar-collections-content">
                 <SidebarSectionLabel>Favorites</SidebarSectionLabel>
                 <div className="space-y-1">
-                  {favoriteCollections.length === 0 && <p className="text-xs text-muted-foreground">No favorite collections.</p>}
+                  {favoriteCollections.length === 0 && <p className="text-xs text-muted-foreground mx-2">No favorite collections.</p>}
                   {favoriteCollections.map((collection) => (
                     <a href={`/collections/${collection.id}`} key={collection.id} title={collection.name} className="flex h-9 items-center gap-3 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" >
                       <Folder aria-hidden="true" className="size-4 shrink-0" />
@@ -98,7 +98,7 @@ export function SidebarContent({collapsed, setCollapsed, mobile = false, current
 
                 <SidebarSectionLabel className="mt-5">Recent</SidebarSectionLabel>
                 <div className="space-y-1">
-                  {recentCollections.length === 0 && <p className="text-xs text-muted-foreground">No recent collections.</p>}
+                  {recentCollections.length === 0 && <p className="text-xs text-muted-foreground mx-2">No recent collections.</p>}
                   {recentCollections.map((collection) => (
                     <a href={`/collections/${collection.id}`} key={collection.id} title={collection.name} className="flex h-9 items-center gap-3 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" >
                       <Folder aria-hidden="true" className="size-4 shrink-0" />
