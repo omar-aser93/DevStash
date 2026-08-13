@@ -1,23 +1,22 @@
-# Current Feature
-
-Fix dashboard data scoping and lint exclusions
+# Current Feature: Auth Setup - NextAuth + GitHub Provider
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
-
-completed
+In Progress
 
 ## Goals
 
-- Scope tags to their owning user with a compound unique name constraint.
-- Bound dashboard collection queries and use database relation counts.
-- Exclude generated and auxiliary directories from ESLint.
+- Install NextAuth v5 beta and the Prisma adapter.
+- Configure split Auth.js configuration for Edge compatibility, using GitHub OAuth and JWT sessions.
+- Expose Auth.js route handlers and extend the session type with the user ID.
+- Protect `/dashboard/*` through Next.js 16 `proxy.ts` and redirect unauthenticated visitors to the default sign-in page.
 
 
 ## Notes
 
-<!-- Any extra notes -->
+- Do not configure a custom sign-in page; use the NextAuth default page for testing.
+- Required environment variables: `AUTH_SECRET`, `AUTH_GITHUB_ID`, and `AUTH_GITHUB_SECRET`.
+- Validate by confirming `/dashboard` redirects when signed out, GitHub sign-in works, and users return to `/dashboard` after authentication.
 
 
 ## History
