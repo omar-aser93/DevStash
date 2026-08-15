@@ -1,16 +1,35 @@
-# Current Feature
+# Current Feature: Auth UI - Sign In, Register & Sign Out
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
--
+- Build custom Sign In page at `/sign-in` with email & password inputs, "Sign in with GitHub" button, link to `/register`, form validation, and error messaging
+- Build custom Register page at `/register` with name, email, password, and confirm password fields, client-side validation, submission to `POST /api/auth/register`, and redirect to `/sign-in` on success
+- Update NextAuth config (`auth.config.ts`) and proxy redirect logic to use custom sign-in page (`pages: { signIn: '/sign-in' }`)
+- Create reusable `UserAvatar` component handling GitHub avatar images with initials fallback
+- Update bottom of sidebar and mobile navigation to display authenticated user details, clickable profile trigger (`/profile`), and dropdown menu with "Sign out"
+- Verify sign-in (Credentials & GitHub), registration, sidebar user display, and sign-out flows end-to-end
 
 ## Notes
 
--
+- **Sign In Page (`/sign-in`)**:
+  - Email and password input fields
+  - "Sign in with GitHub" OAuth button
+  - Navigation link to `/register`
+  - Inline error display for invalid credentials or auth errors
+- **Register Page (`/register`)**:
+  - Name, email, password, confirm password fields
+  - Validation for password matching and valid email format
+  - `POST` to `/api/auth/register` and redirect to `/sign-in` upon success
+- **Avatar Logic & Component**:
+  - If user has `image` (e.g. from GitHub OAuth): render image
+  - Otherwise: generate uppercase initials from `name` (e.g., "Omar Mohamed" → "OM", or fallback from email)
+- **Sidebar User Section**:
+  - Dynamic user avatar and user name display
+  - Dropdown menu on avatar/user click with "Sign out" action and link to `/profile`
 
 ## History
 

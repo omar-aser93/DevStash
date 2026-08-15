@@ -1,6 +1,6 @@
 ---
 name: feature
-description: Manage current feature workflow - start, review, explain, test or complete
+description: Manage current feature workflow - load, start, review, explain, test or complete
 argument-hint: load|start|review|explain|test|complete
 ---
 
@@ -33,7 +33,7 @@ Execute the requested action using the sections below.
 ### If action is "load":
 
 1. Check the argument (the text after "load"):
-   - If it looks like a filename (single word, no spaces): Look for `context/features/{name}.md`
+   - If it looks like a filename (single word, no spaces): Look for `context/features/{name}.md` OR `context/fixes/{name}.md`
    - If it's multiple words: Use as inline feature description, generate goals
    - If empty: Error - "load" requires a spec filename or feature description
 2. Update current-feature.md:
@@ -112,18 +112,18 @@ Brief summary of the data/control flow between these files.
 
 ### If action is "complete":
 
-1. Run a final review to ensure everything is complete
-2. Stage all changes
-3. Commit with a descriptive message based on the feature
-4. Push the branch to origin
-5. Merge into main or master
-6. Switch back to main or master branch
-7. Reset current-feature.md:
-   - Change H1 back to `# Current Feature`
-   - Clear Goals and Notes sections
-   - Set Status to "Not Started"
-8. Add feature summary to the END of History
+# Complete Action
 
+1. Stage all changes and commit with a descriptive message
+2. Switch to main/master and merge the feature branch (no push yet)
+3. Delete the local feature branch
+4. Reset current-feature.md:
+   - Change H1 back to `# Current Feature`
+   - Clear Goals and Notes sections (keep placeholder comments)
+   - Add feature summary to the END of History
+5. Commit the reset: `chore: reset current-feature.md after completing [feature]`
+6. Push main/master to origin ONCE (single push with all changes)
+7. If feature branch was previously pushed, delete it from origin
 ---
 
 If no action provided, or action is "help": explain the available options — load, start, review, test, complete — and how to invoke each on this platform (e.g. `/feature start`, `$feature start`, or "use the feature skill to start").

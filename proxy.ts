@@ -7,7 +7,7 @@ const { auth } = NextAuth(authConfig);
 
 export const proxy = auth((request) => {
   if (!request.auth) {
-    return NextResponse.redirect(new URL('/api/auth/signin', request.nextUrl));
+    return NextResponse.redirect(new URL('/sign-in', request.nextUrl));
   }
 });
 
