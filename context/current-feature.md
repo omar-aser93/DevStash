@@ -1,28 +1,16 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Ensure `password` field exists in the `User` model via Prisma migration if not already present
-- Update `auth.config.ts` with Credentials provider placeholder (`authorize: () => null`)
-- Update `auth.ts` to implement Credentials authentication with email lookup and bcryptjs password verification
-- Create registration API route at `POST /api/auth/register` (validate inputs, verify passwords match, check existing user, hash password, create user)
-- Test registration and email/password sign-in flow redirecting to `/dashboard`
-- Verify GitHub OAuth authentication continues to work seamlessly alongside Credentials provider
+-
 
 ## Notes
 
-- **Password Hashing**: Use `bcryptjs` for secure password hashing and comparison
-- **NextAuth Split Pattern**:
-  - `auth.config.ts`: Contains lightweight configuration with `Credentials({ authorize: () => null })` placeholder for middleware/Edge compatibility
-  - `auth.ts`: Overrides Credentials provider with full Node.js runtime logic (Prisma queries + bcryptjs comparison)
-- **Registration Endpoint**:
-  - Accepts `name`, `email`, `password`, `confirmPassword`
-  - Validates matching passwords and existing accounts
-  - Creates user in database with hashed password
+-
 
 ## History
 
@@ -36,3 +24,4 @@ In Progress
 - completed creating queries for items and collections. and converted static dashboard & sidebar to dynamiclly fetched data.
 - Fixed user-scoped tags, bounded dashboard collection queries, and added ESLint ignores for generated and auxiliary directories. Verified with Prisma schema validation, focused ESLint, and `tsc --noEmit`.
 - Completed Auth setup with NextAuth + GitHub Provider. Verified with `npm run dev`.
+- Completed Auth Credentials & Registration (Phase 2): added Credentials provider placeholder to auth.config.ts, full bcryptjs password verification in auth.ts, and created registration API route at /api/auth/register. Verified with database tests, TypeScript check, and Next.js build.
