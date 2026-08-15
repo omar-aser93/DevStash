@@ -8,8 +8,9 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuGroup,
+  DropdownMenuGroupLabel,
+  DropdownMenuItem,  
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -61,14 +62,16 @@ export function UserNavMenu({ user, collapsed }: UserNavMenuProps) {
         side="top"
         align={collapsed ? "center" : "start"}
         sideOffset={8}
-        className="w-56"
+        className="w-56 bg-black"
       >
-        <DropdownMenuLabel>
+        <DropdownMenuGroup>
+  <DropdownMenuGroupLabel>
+
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none text-foreground">{user.name}</p>
             <p className="text-xs leading-none text-muted-foreground truncate">{user.email}</p>
           </div>
-        </DropdownMenuLabel>
+        </DropdownMenuGroupLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/profile" className="flex w-full items-center gap-2" />}>
           <User className="size-4 shrink-0 text-muted-foreground" />
@@ -78,6 +81,7 @@ export function UserNavMenu({ user, collapsed }: UserNavMenuProps) {
           <Settings className="size-4 shrink-0 text-muted-foreground" />
           <span>Settings</span>
         </DropdownMenuItem>
+         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleSignOut}

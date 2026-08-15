@@ -91,6 +91,23 @@ function DropdownMenuLabel({
   );
 }
 
+function DropdownMenuGroup({ ...props }: Menu.Group.Props) {
+  return <Menu.Group data-slot="dropdown-menu-group" {...props} />;
+}
+
+function DropdownMenuGroupLabel({
+  className,
+  ...props
+}: Menu.GroupLabel.Props) {
+  return (
+    <Menu.GroupLabel
+      data-slot="dropdown-menu-group-label"
+      className={cn("px-3 py-1.5 text-xs font-semibold text-muted-foreground", className)}
+      {...props}
+    />
+  );
+}
+
 export {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -98,4 +115,6 @@ export {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuGroup,
+  DropdownMenuGroupLabel,
 };
