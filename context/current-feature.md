@@ -1,4 +1,4 @@
-# Current Feature: Auth Setup - NextAuth + GitHub Provider
+# Current Feature: Auth Credentials - Email/Password Provider
 
 ## Status
 
@@ -6,18 +6,23 @@ In Progress
 
 ## Goals
 
-- Install NextAuth v5 beta and the Prisma adapter.
-- Configure split Auth.js configuration for Edge compatibility, using GitHub OAuth and JWT sessions.
-- Expose Auth.js route handlers and extend the session type with the user ID.
-- Protect `/dashboard/*` through Next.js 16 `proxy.ts` and redirect unauthenticated visitors to the default sign-in page.
-
+- Ensure `password` field exists in the `User` model via Prisma migration if not already present
+- Update `auth.config.ts` with Credentials provider placeholder (`authorize: () => null`)
+- Update `auth.ts` to implement Credentials authentication with email lookup and bcryptjs password verification
+- Create registration API route at `POST /api/auth/register` (validate inputs, verify passwords match, check existing user, hash password, create user)
+- Test registration and email/password sign-in flow redirecting to `/dashboard`
+- Verify GitHub OAuth authentication continues to work seamlessly alongside Credentials provider
 
 ## Notes
 
-- Do not configure a custom sign-in page; use the NextAuth default page for testing.
-- Required environment variables: `AUTH_SECRET`, `AUTH_GITHUB_ID`, and `AUTH_GITHUB_SECRET`.
-- Validate by confirming `/dashboard` redirects when signed out, GitHub sign-in works, and users return to `/dashboard` after authentication.
-
+- **Password Hashing**: Use `bcryptjs` for secure password hashing and comparison
+- **NextAuth Split Pattern**:
+  - `auth.config.ts`: Contains lightweight configuration with `Credentials({ authorize: () => null })` placeholder for middleware/Edge compatibility
+  - `auth.ts`: Overrides Credentials provider with full Node.js runtime logic (Prisma queries + bcryptjs comparison)
+- **Registration Endpoint**:
+  - Accepts `name`, `email`, `password`, `confirmPassword`
+  - Validates matching passwords and existing accounts
+  - Creates user in database with hashed password
 
 ## History
 
@@ -30,4 +35,4 @@ In Progress
 - Completed Prisma 7 setup with Neon PostgreSQL database connection. Verified with `npm run dev`.
 - completed creating queries for items and collections. and converted static dashboard & sidebar to dynamiclly fetched data.
 - Fixed user-scoped tags, bounded dashboard collection queries, and added ESLint ignores for generated and auxiliary directories. Verified with Prisma schema validation, focused ESLint, and `tsc --noEmit`.
-
+- Completed Auth setup with NextAuth + GitHub Provider. Verified with `npm run dev`.
