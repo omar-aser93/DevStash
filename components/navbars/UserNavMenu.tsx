@@ -73,7 +73,7 @@ export function UserNavMenu({ user, collapsed }: UserNavMenuProps) {
           </div>
         </DropdownMenuGroupLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/profile" className="flex w-full items-center gap-2" />}>
+        <DropdownMenuItem render={<Link href="/dashboard/profile" className="flex w-full items-center gap-2" />}>
           <User className="size-4 shrink-0 text-muted-foreground" />
           <span>Profile</span>
         </DropdownMenuItem>

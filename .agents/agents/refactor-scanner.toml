@@ -106,9 +106,9 @@ Briefly summarize the overall state of duplication in the codebase and the highe
 #### [Utility Name] Extraction
 
 **Locations**:
-- `src/components/UserCard.tsx` (lines 45-50)
-- `src/pages/profile.tsx` (lines 78-83)
-- `src/lib/api.ts` (lines 112-117)
+- `components/UserCard.tsx` (lines 45-50)
+- `pages/profile.tsx` (lines 78-83)
+- `lib/api.ts` (lines 112-117)
 
 **Repeated Code**:
 ```typescript

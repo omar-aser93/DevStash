@@ -6,17 +6,17 @@ argument-hint: <prompt-name>
 
 ## Task
 
-Execute research task: $ARGUMENTS
+Execute research task: argument
 
-$ARGUMENTS is first word after /skill ..
+- The **argument** is the first word after /research ..
 
 ---
 
 ### Instructions
 
 1. If no argument provided, error: "Usage: /research <prompt-name>"
-2. Look for prompt file at `context/research/{$ARGUMENTS}.md`
-3. If not found, error: "Prompt file not found at context/research/{$ARGUMENTS}.md"
+2. Look for prompt file at `context/research/{argument}.md`
+3. If not found, error: "Prompt file not found at context/research/{argument}.md"
 4. Read the prompt file which should contain:
    - **Output**: Where to write results (e.g., `context/content-types.md`)
    - **Research**: What to investigate

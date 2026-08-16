@@ -16,7 +16,8 @@
 
 ## Next.js
 
-- Server components by default
+- all `page.tsx` are server components with meta data
+- components are Server components by default
 - Only use `'use client'` when needed (interactivity, hooks, browser APIs)
 - Use Server Actions for form submissions and simple mutations
 - Use API routes when you need:
