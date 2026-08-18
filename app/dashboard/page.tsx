@@ -5,7 +5,7 @@ import { getRecentCollections, getCollectionStats } from "@/lib/queries/collecti
 import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/queries/items";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentCollectionCard } from "@/components/dashboard/RecentCollectionCard";
-import { PinnedItemCard } from "@/components/dashboard/PinnedItemCard";
+import { ItemCard } from "@/components/dashboard/ItemCard";
 import { RecentItemRow } from "@/components/dashboard/RecentItemRow";
 
 export const metadata: Metadata = {
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {pinnedItems.map((item) => (
-                  <PinnedItemCard key={item.id} item={item} />
+                  <ItemCard key={item.id} item={item} />
                 ))}
               </div>
             </section>

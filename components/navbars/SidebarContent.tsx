@@ -78,7 +78,7 @@ export function SidebarContent({
               return (
                 <a
                   className="flex h-9 items-center gap-3 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  href={`/items/${type.name}`}
+                  href={`/dashboard/items/${type.name}`}
                   key={type.id}
                   title={type.name}
                 >

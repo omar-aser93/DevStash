@@ -1,17 +1,24 @@
+"use client";
+
 import { Star } from "lucide-react";
 import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
 import type { ItemWithType } from "@/lib/queries/items";
+import { useItemDrawer } from "@/components/item-drawer/useItemDrawer";
 
-export interface PinnedItemCardProps {
+export interface ItemCardProps {
   item: ItemWithType;
 }
 
-export function PinnedItemCard({ item }: PinnedItemCardProps) {
+export function ItemCard({ item }: ItemCardProps) {
+  const { openDrawer } = useItemDrawer();
   const styles = getColorStyles(item.itemType.color);
+
+  const handleClick = () => openDrawer(item.id);
 
   return (
     <div
-      className="group p-4 rounded-xl border border-l-4 border-muted/50 bg-card/20 flex flex-col justify-between min-h-35 hover:bg-card/40 transition-colors"
+      onClick={handleClick}
+      className="group p-4 rounded-xl border border-l-4 border-muted/50 bg-card/20 flex flex-col justify-between min-h-35 hover:bg-card/40 transition-colors cursor-pointer"
       style={styles.borderLeft}
     >
       <div className="space-y-2">
@@ -48,12 +55,7 @@ export function PinnedItemCard({ item }: PinnedItemCardProps) {
         )}
         <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t pt-2 border-muted/50">
           <span>{item.itemType.name}</span>
-          <a
-            href={`/items/${item.itemType.name}?id=${item.id}`}
-            className="font-semibold hover:text-foreground hover:underline"
-          >
-            View details
-          </a>
+          <span className="font-semibold text-foreground group-hover:underline">View</span>
         </div>
       </div>
     </div>

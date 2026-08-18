@@ -1,6 +1,36 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { cache } from "react";
+import { notFound } from "next/navigation";
+
+export interface FullItem {
+  id: string;
+  title: string;
+  description: string | null;
+  content: string | null;
+  contentType: string;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  url: string | null;
+  language: string | null;
+  isFavorite: boolean;
+  isPinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  itemType: {
+    id: string;
+    name: string;
+    icon: string;
+    color: string;
+  };
+  tags: string[];
+  collections: {
+    id: string;
+    name: string;
+  }[];
+}
+
 
 export interface ItemWithType {
   id: string;
@@ -126,3 +156,89 @@ export const getItemTypesWithCounts = cache(async (userId: string): Promise<Item
     itemCount: countMap.get(type.id) ?? 0,
   }));
 });
+
+
+/** Items filtered by a specific item type (system or user-created). */
+/** Returns the items and the type object. If type not found, throws notFound(). */
+export async function getItemsByType(userId: string, typeName: string) {
+  const itemType = await prisma.itemType.findFirst({
+    where: {
+      name: typeName,
+      OR: [
+        { isSystem: true },
+        { userId: userId },
+      ],
+    },
+  });
+
+  if (!itemType) {
+    notFound(); // Triggers 404
+  }
+
+  const items = await prisma.item.findMany({
+    where: {
+      userId,
+      itemTypeId: itemType?.id,
+    },
+    orderBy: { updatedAt: "desc" },
+    include: itemInclude,
+  });
+
+  return {
+    items: items.map(mapItem),
+    type: itemType,
+  };
+}
+
+
+/** Fetch a single item by ID with all relations (for the drawer) */
+export async function getItemById(
+  userId: string,
+  itemId: string
+): Promise<FullItem | null> {
+  const item = await prisma.item.findFirst({
+    where: {
+      id: itemId,
+      userId: userId,
+    },
+    include: {
+      itemType: true,
+      tags: true,
+      collections: {
+        include: {
+          collection: true,
+        },
+      },
+    },
+  });
+
+  if (!item) return null;
+
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    content: item.content,
+    contentType: item.contentType,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    url: item.url,
+    language: item.language,
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    itemType: {
+      id: item.itemType.id,
+      name: item.itemType.name,
+      icon: item.itemType.icon,
+      color: item.itemType.color,
+    },
+    tags: item.tags.map((tag) => tag.name),
+    collections: item.collections.map((ic) => ({
+      id: ic.collection.id,
+      name: ic.collection.name,
+    })),
+  };
+}

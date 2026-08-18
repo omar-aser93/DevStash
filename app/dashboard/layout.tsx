@@ -17,7 +17,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
   
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Navbar {...sidebarProps}/>
       <div className="flex">
         <Sidebar {...sidebarProps} />        
         <main className="min-w-0 flex-1"> {children} </main>

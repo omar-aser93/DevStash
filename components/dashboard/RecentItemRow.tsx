@@ -1,7 +1,10 @@
+"use client";
+
 import { Star } from "lucide-react";
 import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
 import { cn } from "@/lib/utils";
 import type { ItemWithType } from "@/lib/queries/items";
+import { useItemDrawer } from "@/components/item-drawer/useItemDrawer";
 
 export interface RecentItemRowProps {
   item: ItemWithType;
@@ -9,6 +12,7 @@ export interface RecentItemRowProps {
 }
 
 export function RecentItemRow({ item, isFirst }: RecentItemRowProps) {
+  const { openDrawer } = useItemDrawer();
   const styles = getColorStyles(item.itemType.color);
 
   const formattedDate = new Date(item.createdAt).toLocaleDateString(undefined, {
@@ -16,10 +20,13 @@ export function RecentItemRow({ item, isFirst }: RecentItemRowProps) {
     day: "numeric",
   });
 
+  const handleClick = () => openDrawer(item.id);
+
   return (
     <div
+      onClick={handleClick}
       className={cn(
-        "flex items-start gap-3 transition-colors hover:bg-muted/10 p-2 -mx-2 rounded-lg border-l-2 pl-3",
+        "flex items-start gap-3 transition-colors hover:bg-muted/10 p-2 -mx-2 rounded-lg border-l-2 pl-3 cursor-pointer",
         !isFirst && "pt-3"
       )}
       style={styles.borderLeft}
@@ -33,7 +40,7 @@ export function RecentItemRow({ item, isFirst }: RecentItemRowProps) {
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-xs font-semibold truncate hover:text-foreground transition-colors">
-            <a href={`/items/${item.itemType.name}?id=${item.id}`}>{item.title}</a>
+            {item.title}
           </h3>
           {item.isFavorite && (
             <Star className="size-3 fill-yellow-400 text-yellow-400 shrink-0" />
