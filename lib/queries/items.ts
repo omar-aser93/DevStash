@@ -12,6 +12,7 @@ export interface FullItem {
   fileUrl: string | null;
   fileName: string | null;
   fileSize: number | null;
+  fileKey: string | null;
   url: string | null;
   language: string | null;
   isFavorite: boolean;
@@ -47,6 +48,12 @@ export interface ItemWithType {
     color: string;
   };
   tags: string[];
+  // Optional file fields (only for file/image types)
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileSize?: number | null;
+  fileKey?: string | null;
+  contentType?: string ; // e.g., "FILE", "IMAGE" (we could also use item type name)
 }
 
 const itemInclude = {
@@ -64,6 +71,11 @@ interface RawItem {
   updatedAt: Date;
   itemType: { id: string; name: string; icon: string; color: string };
   tags: { name: string }[];
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  fileKey: string | null;
+  contentType: string ;
 }
 
 function mapItem(item: RawItem): ItemWithType {
@@ -82,6 +94,11 @@ function mapItem(item: RawItem): ItemWithType {
       color: item.itemType.color,
     },
     tags: item.tags.map((tag) => tag.name),
+    fileUrl: item.fileUrl ?? null,
+    fileName: item.fileName ?? null,
+    fileSize: item.fileSize ?? null,
+    fileKey: item.fileKey ?? null,
+    contentType: item.contentType ?? null,
   };
 }
 
@@ -223,6 +240,7 @@ export async function getItemById(
     fileUrl: item.fileUrl,
     fileName: item.fileName,
     fileSize: item.fileSize,
+    fileKey: item.fileKey,
     url: item.url,
     language: item.language,
     isFavorite: item.isFavorite,

@@ -3,45 +3,28 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Star,
-  Pin,
-  Copy,
-  Pencil,
-  Trash2,
-  Calendar,
-  Tag,
-  Folder,
-  X,
-  Check,
-} from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,} from "@/components/ui/dialog";
+import { Star, Pin, Copy, Pencil, Trash2, Calendar, Tag, Folder, X, Check, Download, File,} from "lucide-react";
 import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
 import { useItemDrawer } from "./useItemDrawer";
 import { updateItem, deleteItem } from "@/lib/actions/itemsActions";
 import type { FullItem } from "@/lib/queries/items";
+import { CodeEditor } from "@/components/CodeEditor";
+import { MarkdownEditor } from "@/components/MarkdownEditor";
+import { FileUpload } from "@/components/FileUpload";
+import Image from "next/image";
+import { formatFileSize } from "@/lib/utils";
+
 
 export function ItemDrawer() {
-  const router = useRouter();
+  const router = useRouter();        // Navigation hook
+  // Item drawer states
   const { isOpen, itemId, closeDrawer } = useItemDrawer();
   const [item, setItem] = useState<FullItem | null>(null);
   const [loading, setLoading] = useState(false);
@@ -116,7 +99,6 @@ export function ItemDrawer() {
       toast.error("Title is required");
       return;
     }
-
     startTransition(async () => {
       const result = await updateItem(itemId, {
         title: formData.title,
@@ -125,6 +107,10 @@ export function ItemDrawer() {
         url: formData.url,
         language: formData.language,
         tags: formData.tags,
+        fileUrl: formData.fileUrl,
+        fileKey: formData.fileKey,
+        fileName: formData.fileName,
+        fileSize: formData.fileSize,
       });
       if (result.success) {
         toast.success("Item updated");
@@ -183,6 +169,14 @@ export function ItemDrawer() {
     } else {
       toast.info("Nothing to copy");
     }
+  };
+
+  // Download file handler
+  const handleDownload = async () => {
+    if (!item?.fileUrl) return;
+    if (!item.fileKey) return;
+    // Open the download proxy
+    window.open(`/api/download/${item.fileKey}`, '_blank');    
   };
 
   // Delete handler: opens the confirmation dialog
@@ -255,27 +249,27 @@ export function ItemDrawer() {
           </div>
 
           {/* Type-specific fields */}
-          {item.contentType === "TEXT" && (
+          {(item.contentType === "TEXT" && (item.itemType.name.toLowerCase() === "snippet" || item.itemType.name.toLowerCase() === "command")) ? (
             <div>
               <label className="text-xs font-medium text-muted-foreground">Content</label>
-              <Textarea
+              <CodeEditor
                 value={formData.content || ""}
-                onChange={(e: { target: { value: unknown; }; }) => updateField("content", e.target.value)}
-                placeholder="Enter content"
-                rows={5}
+                onChange={(val) => updateField("content", val)}
+                language={formData.language || "plaintext"}
+                height={300}
               />
             </div>
-          )}
-          {item.contentType === "URL" && (
+          ) : (item.contentType === "TEXT" && (item.itemType.name.toLowerCase() === "prompt" || item.itemType.name.toLowerCase() === "note")) ? (
             <div>
-              <label className="text-xs font-medium text-muted-foreground">URL</label>
-              <Input
-                value={formData.url || ""}
-                onChange={(e) => updateField("url", e.target.value)}
-                placeholder="https://..."
+              <label className="text-xs font-medium text-muted-foreground">Content</label>
+              <MarkdownEditor
+                value={formData.content || ""}
+                onChange={(val) => updateField("content", val)}
+                height={300}
               />
             </div>
-          )}
+          ) : null}
+          {/* Language input – only for snippet/command */}
           {(item.contentType === "TEXT" && (item.itemType.name.toLowerCase() === "snippet" || item.itemType.name.toLowerCase() === "command")) && (
             <div>
               <label className="text-xs font-medium text-muted-foreground">Language</label>
@@ -286,7 +280,45 @@ export function ItemDrawer() {
               />
             </div>
           )}
-
+          {/* URL input – only for link type */}
+          {item.contentType === "URL" && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">URL</label>
+              <Input
+                value={formData.url || ""}
+                onChange={(e) => updateField("url", e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+          )}
+          {/* File upload – only for file/image types */}
+          {item.contentType === "FILE" && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">File</label>
+              <FileUpload
+                type={item.itemType.name.toLowerCase() === "image" ? "image" : "file"}
+                onUpload={(data) => {
+                  // Update formData with new file info
+                  updateField("fileUrl", data.url);
+                  updateField("fileKey", data.key);
+                  updateField("fileName", data.fileName);
+                  updateField("fileSize", data.fileSize);
+                }}
+                onRemove={() => {
+                  // Remove file from formData
+                  updateField("fileUrl", null);
+                  updateField("fileKey", null);
+                  updateField("fileName", null);
+                  updateField("fileSize", null);
+                }}
+                value={formData.fileUrl || undefined}
+                existingFileName={formData.fileName || undefined}
+                existingFileSize={formData.fileSize || undefined}
+                existingMimeType={undefined} // not needed
+              />
+            </div>
+          )}
+                    
           {/* Tags */}
           <div>
             <label className="text-xs font-medium text-muted-foreground">Tags (comma-separated)</label>
@@ -348,16 +380,68 @@ export function ItemDrawer() {
         )}
 
         {/* Content preview */}
-        {item.contentType === "TEXT" && item.content && (
-          <div className="rounded-md bg-muted/30 p-3 text-sm whitespace-pre-wrap max-h-60 overflow-y-auto border">
-            {item.content}
-          </div>
+        {item.contentType === "TEXT" && (
+          (item.itemType.name.toLowerCase() === "snippet" || item.itemType.name.toLowerCase() === "command") ? (
+            <div className="rounded-md overflow-hidden border">
+              <CodeEditor
+                value={item.content || ""}
+                readOnly
+                language={item.language || "plaintext"}
+                height={300}
+              />
+            </div>
+          ) : (item.itemType.name.toLowerCase() === "prompt" || item.itemType.name.toLowerCase() === "note") ? (
+            <div className="rounded-md overflow-hidden border">
+              <MarkdownEditor
+                value={item.content || ""}
+                readOnly
+                height={300}
+              />
+            </div>
+          ) : (
+            // Fallback for other text types (shouldn't happen)
+            <div className="rounded-md bg-muted/30 p-3 text-sm whitespace-pre-wrap max-h-60 overflow-y-auto border">
+              {item.content}
+            </div>
+          )
         )}
         {item.contentType === "URL" && item.url && (
           <div className="rounded-md bg-muted/30 p-3 text-sm overflow-y-auto border">
             <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
               {item.url}
             </a>
+          </div>
+        )}
+        {/* File/Image preview */}
+        {item.contentType === "FILE" && (
+          <div className="space-y-2">
+            {item.fileUrl && item.fileName && (
+              <div className="rounded-md border bg-muted/20 p-4">
+                <div className="flex items-center gap-3">
+                  <File className="size-5 text-muted-foreground" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{item.fileName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.fileSize ? formatFileSize(item.fileSize) : "Unknown size"}
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={handleDownload}>
+                    <Download className="size-4" />
+                  </Button>
+                </div>
+                {item.fileUrl && (item.fileName?.toLowerCase().match(/\.(png|jpg|jpeg|gif|webp|svg)$/)) && (
+                  <div className="mt-2 rounded-md overflow-hidden border max-h-80">
+                    <Image
+                      src={item.fileUrl}
+                      alt={item.fileName}
+                      width={400}
+                      height={300}
+                      className="h-auto w-full object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -392,13 +476,8 @@ export function ItemDrawer() {
               Edit
             </Button>
           </div>
-          <div className="py-4 border-t flex justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto text-red-500 hover:text-red-600 hover:bg-red-500/10"
-              onClick={handleDelete}
-            >
+          <div className="py-4 border-t flex items-center justify-end">
+            <Button variant="ghost" size="sm" onClick={handleDelete} className="ml-auto text-red-500 hover:text-red-600 hover:bg-red-500/10 py-2" >
               <Trash2 className="size-4" />
               Delete
             </Button>

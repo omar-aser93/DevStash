@@ -3,27 +3,17 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
 import { createItem } from "@/lib/actions/itemsActions";
+import { CodeEditor } from "@/components/CodeEditor";
+import { MarkdownEditor } from "@/components/MarkdownEditor";
+import { FileUpload } from "@/components/FileUpload";
 
-type ItemTypeName = "snippet" | "prompt" | "command" | "note" | "link";
+type ItemTypeName = "snippet" | "prompt" | "command" | "note" | "link" | "file" | "image";
 
 interface CreateItemDialogProps {
   open: boolean;
@@ -31,7 +21,8 @@ interface CreateItemDialogProps {
 }
 
 export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) {
-  const router = useRouter();
+  const router = useRouter();           // navigation hook
+  // form states
   const [type, setType] = useState<ItemTypeName>("snippet");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -39,8 +30,10 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
   const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("");
   const [tags, setTags] = useState("");
+  const [fileData, setFileData] = useState<{ url: string; key: string; fileName: string; fileSize: number; mimeType: string;} | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // reset form handler
   const resetForm = () => {
     setType("snippet");
     setTitle("");
@@ -49,9 +42,11 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
     setUrl("");
     setLanguage("");
     setTags("");
+    setFileData(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // form submit handler
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       toast.error("Title is required");
@@ -69,6 +64,10 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
         url: url.trim() || null,
         language: language.trim() || null,
         tags: tagArray,
+        fileUrl: fileData?.url || null,
+        fileName: fileData?.fileName || null,
+        fileSize: fileData?.fileSize || null,
+        fileKey: fileData?.key || null,
       });
 
       if (result.success) {
@@ -83,13 +82,13 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-125 bg-black">
+    <Dialog open={open} onOpenChange={onOpenChange} >
+      <DialogContent className="sm:max-w-125 max-h-[90vh] overflow-y-scroll bg-black flex flex-col">
         <DialogHeader>
           <DialogTitle>Create new item</DialogTitle>
           <DialogDescription>Add a new item to your stash.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 ">
           {/* Type selector */}
           <div>
             <label className="text-xs font-medium text-muted-foreground">Type</label>
@@ -103,6 +102,8 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
                 <SelectItem value="command">Command</SelectItem>
                 <SelectItem value="note">Note</SelectItem>
                 <SelectItem value="link">Link</SelectItem>
+                <SelectItem value="file">File</SelectItem>
+                <SelectItem value="image">Image</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -125,18 +126,26 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
           </div>
 
           {/* Conditional fields based on type */}
-          {type !== "link" && (
+          {(type === "snippet" || type === "command") ? (
             <div>
               <label className="text-xs font-medium text-muted-foreground">Content</label>
-              <Textarea
+              <CodeEditor
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Enter content"
-                rows={4}
+                onChange={(val) => setContent(val)}
+                language={language || "plaintext"}
+                height={250}
               />
             </div>
-          )}
-          {type === "link" && (
+          ) : (type === "prompt" || type === "note") ? (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Content</label>
+              <MarkdownEditor
+                value={content}
+                onChange={(val) => setContent(val)}
+                height={250}
+              />
+            </div>
+          ) : type === "link" ? (
             <div>
               <label className="text-xs font-medium text-muted-foreground">URL *</label>
               <Input
@@ -146,7 +155,20 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
                 required
               />
             </div>
-          )}
+          ) : (type === "file" || type === "image") ? (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Upload {type}</label>
+              <FileUpload
+                type={type === "image" ? "image" : "file"}
+                onUpload={(data) => {
+                  // Store the file info in state
+                  setFileData(data);
+                }}
+                onRemove={() => setFileData(null)}
+              />
+            </div>
+          ) : null}
+
           {(type === "snippet" || type === "command") && (
             <div>
               <label className="text-xs font-medium text-muted-foreground">Language</label>

@@ -93,3 +93,137 @@ html {
 .sidebar-collections-toggle:not(:checked) + .sidebar-collections-label svg {
   transform: rotate(-90deg);
 }
+
+
+/* Make Monaco scrollbar match dark theme */
+.monaco-editor .scrollbar .slider {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+.monaco-editor .scrollbar .slider:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+.monaco-editor .scrollbar .slider.active {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+.monaco-editor .scrollbar .slider.dragging {
+  background: rgba(255, 255, 255, 0.5) !important;
+}
+
+
+
+/* Markdown preview styles */
+.markdown-preview {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.markdown-preview h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.25rem;
+}
+.markdown-preview h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.25rem;
+}
+.markdown-preview h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+.markdown-preview h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.markdown-preview h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.markdown-preview h6 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+  color: var(--muted-foreground);
+}
+
+.markdown-preview p {
+  margin-bottom: 0.75rem;
+}
+
+.markdown-preview a {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+.markdown-preview a:hover {
+  color: #93bbfc;
+}
+
+.markdown-preview code {
+  background: var(--muted);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8em;
+}
+.markdown-preview pre {
+  background: var(--muted);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+}
+.markdown-preview pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.markdown-preview ul {
+  list-style-type: disc;
+}
+.markdown-preview ol {
+  list-style-type: decimal;
+}
+.markdown-preview li {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-preview blockquote {
+  border-left: 4px solid var(--muted-foreground);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: var(--muted-foreground);
+}
+
+.markdown-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+}
+.markdown-preview th,
+.markdown-preview td {
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+}
+.markdown-preview th {
+  background: var(--muted);
+  font-weight: 600;
+}

@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createItemSchema, updateItemSchema } from "@/lib/validators";
 import { Prisma } from "@/prisma/generated/prisma/client";
+import { deleteFileFromR2 } from "@/lib/r2";
 
 
 // Helper to resolve item type from name (system or user-owned)
@@ -30,7 +31,7 @@ export async function createItem(data: unknown) {
     return { success: false, error: result.error.issues[0].message };
   }
 
-  const { typeName, title, description, tags, content, url, language } = result.data;
+  const { typeName, title, description, tags, content, url, language, fileUrl, fileName, fileSize, fileKey } = result.data;
   const userId = session.user.id;
 
   try {
@@ -38,7 +39,7 @@ export async function createItem(data: unknown) {
     const itemType = await resolveItemType(userId, typeName);
 
     // 2. Determine contentType based on type (or we could store contentType in the itemType)
-    const contentType = itemType.name.toLowerCase() === "link" ? "URL" : "TEXT";
+    const contentType = typeName.toLowerCase() === "link" ? "URL": typeName.toLowerCase() === "file" || typeName.toLowerCase() === "image" ? "FILE" : "TEXT";
 
     // 3. Prepare data
     const cleanedContent = content?.trim() || null;
@@ -54,6 +55,10 @@ export async function createItem(data: unknown) {
         content: cleanedContent,
         url: cleanedUrl,
         language: cleanedLanguage,
+        fileUrl: fileUrl || null,
+        fileName: fileName || null,
+        fileSize: fileSize ?? null,
+        fileKey: fileKey || null,
         userId,
         itemTypeId: itemType.id,
       },
@@ -81,64 +86,10 @@ export async function createItem(data: unknown) {
 
 
 
-// export async function updateItem(itemId: string, data: unknown) {
-//   const session = await auth();
-//   if (!session?.user?.id) return { success: false, error: "Unauthorized" };
-//   const userId = session.user.id;
-
-//   const result = updateItemSchema.safeParse(data);
-//   if (!result.success) {
-//     return { success: false, error: result.error.issues[0].message };
-//   }
-
-//   const { title, description, tags, content, url, language, isFavorite, isPinned } = result.data;
-
-//   try {
-//     // Verify ownership
-//     const existing = await prisma.item.findFirst({
-//       where: { id: itemId, userId },
-//       include: { tags: true },
-//     });
-//     if (!existing) return { success: false, error: "Item not found" };
-
-//     // Build update data
-//     const updateData: Partial<Prisma.ItemUpdateInput> = {};
-//     if (title !== undefined) updateData.title = title.trim();
-//     if (description !== undefined) updateData.description = description?.trim() || null;
-//     if (content !== undefined) updateData.content = content?.trim() || null;
-//     if (url !== undefined) updateData.url = url?.trim() || null;
-//     if (language !== undefined) updateData.language = language?.trim() || null;
-//     if (isFavorite !== undefined) updateData.isFavorite = isFavorite;
-//     if (isPinned !== undefined) updateData.isPinned = isPinned;
-
-//     // Handle tags
-//     if (tags !== undefined) {
-//       // Disconnect all existing tags, then connect new ones
-//       await prisma.item.update({
-//         where: { id: itemId },
-//         data: { tags: { set: [] } },
-//       });
-//       if (tags.length > 0) {
-//         const tagRecords = await upsertTags(userId, tags);
-//         updateData.tags = { connect: tagRecords.map((t) => ({ id: t.id })) };
-//       }
-//     }
-
-//     await prisma.item.update({
-//       where: { id: itemId },
-//       data: updateData,
-//     });
-
-//     revalidatePath("/dashboard");
-//     return { success: true };
-//   } catch (error) {
-//     console.error("Update item error:", error);
-//     return { success: false, error: "Failed to update item" };
-//   }
-// }
 export async function updateItem(itemId: string, data: unknown) {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
   const userId = session.user.id;
 
   const result = updateItemSchema.safeParse(data);
@@ -146,43 +97,67 @@ export async function updateItem(itemId: string, data: unknown) {
     return { success: false, error: result.error.issues[0].message };
   }
 
-  const { title, description, tags, content, url, language, isFavorite, isPinned } = result.data;
+  const { title, description, tags, content, url, language, fileUrl, fileName, fileSize, isFavorite, isPinned } = result.data;
 
   try {
-    // Verify ownership in a single query
-    const existing = await prisma.item.findUnique({
-      where: { id: itemId },
-      select: { userId: true },
+    // Get existing item + file info
+    const existing = await prisma.item.findFirst({
+      where: {
+        id: itemId,
+        userId,
+      },
+      select: {
+        fileUrl: true,
+        fileKey: true,
+      },
     });
-    if (!existing || existing.userId !== userId) {
+
+    if (!existing) {
       return { success: false, error: "Item not found" };
+    }
+
+    if (fileUrl !== undefined && fileUrl !== existing.fileUrl && existing.fileKey) {
+      await deleteFileFromR2(existing.fileKey);
     }
 
     // Build update data
     const updateData: Partial<Prisma.ItemUpdateInput> = {};
-    if (title !== undefined) updateData.title = title.trim();
-    if (description !== undefined) updateData.description = description?.trim() || null;
-    if (content !== undefined) updateData.content = content?.trim() || null;
-    if (url !== undefined) updateData.url = url?.trim() || null;
-    if (language !== undefined) updateData.language = language?.trim() || null;
-    if (isFavorite !== undefined) updateData.isFavorite = isFavorite;
-    if (isPinned !== undefined) updateData.isPinned = isPinned;
 
-    // Handle tags efficiently
+    if (title !== undefined) updateData.title = title.trim();
+    if (description !== undefined) { updateData.description = description?.trim() || null; }
+    if (content !== undefined) { updateData.content = content?.trim() || null; }
+    if (url !== undefined) { updateData.url = url?.trim() || null; }
+    if (language !== undefined) { updateData.language = language?.trim() || null; }
+    if (fileUrl !== undefined) {
+      updateData.fileUrl = fileUrl || null;
+      updateData.fileName = fileName || null;
+      updateData.fileSize = fileSize ?? null;
+      // File was removed
+      if (fileUrl === null && existing.fileKey) {
+        await deleteFileFromR2(existing.fileKey);
+        updateData.fileKey = null;
+      }
+    }
+    if (isFavorite !== undefined) { updateData.isFavorite = isFavorite; }
+    if (isPinned !== undefined) { updateData.isPinned = isPinned; }
+
+    // Handle tags
     if (tags !== undefined) {
-      if (tags.length === 0) {
-        // Disconnect all tags
-        updateData.tags = { set: [] };
-      } else {
-        // Prepare connectOrCreate for each tag
+      // First, disconnect all existing tags
+      await prisma.item.update({
+        where: { id: itemId },
+        data: { tags: { set: [] } },
+      });
+      // Then connect the new tags (if any)
+      if (tags.length > 0) {
         const tagOperations = tags.map((tagName) => ({
           where: { userId_name: { userId, name: tagName } },
           create: { name: tagName, userId },
         }));
-        // Connect or create each tag
-        updateData.tags = {
-          connectOrCreate: tagOperations,
-        };
+        await prisma.item.update({
+          where: { id: itemId },
+          data: { tags: { connectOrCreate: tagOperations } },
+        });
       }
     }
 
@@ -209,6 +184,10 @@ export async function deleteItem(itemId: string) {
   try {
     const item = await prisma.item.findFirst({ where: { id: itemId, userId } });
     if (!item) return { success: false, error: "Item not found" };
+
+    if (item.fileKey) {
+      await deleteFileFromR2(item.fileKey);
+    }
 
     await prisma.item.delete({ where: { id: itemId } });
     revalidatePath("/dashboard");

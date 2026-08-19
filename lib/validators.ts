@@ -8,6 +8,14 @@ export const baseItemFields = {
   tags: tagSchema,
 };
 
+export const fileFields = {
+  fileUrl: z.url().optional().nullable(),
+  fileName: z.string().optional().nullable(),
+  fileSize: z.number().int().nonnegative().optional().nullable(),
+  fileKey: z.string().optional().nullable(),
+};
+
+
 // Create schema – includes typeName and fields based on type
 export const createItemSchema = z
   .object({
@@ -16,8 +24,12 @@ export const createItemSchema = z
     description: baseItemFields.description,
     tags: baseItemFields.tags,
     content: z.string().optional().nullable(),
-    url: z.string().url("Invalid URL").optional().nullable(),
+    url: z.url("Invalid URL").optional().nullable(),
     language: z.string().optional().nullable(),
+    fileUrl: fileFields.fileUrl,
+    fileName: fileFields.fileName,
+    fileSize: fileFields.fileSize,   
+    fileKey: fileFields.fileKey, 
   })
   .superRefine((data, ctx) => {
     const type = data.typeName.toLowerCase();
@@ -26,6 +38,14 @@ export const createItemSchema = z
         code: z.ZodIssueCode.custom,
         message: "URL is required for links",
         path: ["url"],
+      });
+    }
+    if (
+      (type === "file" || type === "image") && (!data.fileUrl || !data.fileName) ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${type === "image" ? "Image" : "File"} upload is required`,
+        path: ["fileUrl"],
       });
     }
     // For TEXT types, content is optional – we accept empty string.
@@ -38,8 +58,12 @@ export const updateItemSchema = z
     description: baseItemFields.description.optional(),
     tags: baseItemFields.tags.optional(),
     content: z.string().optional().nullable(),
-    url: z.string().url("Invalid URL").optional().nullable(),
+    url: z.url("Invalid URL").optional().nullable(),
     language: z.string().optional().nullable(),
+    fileUrl: fileFields.fileUrl,
+    fileName: fileFields.fileName,
+    fileSize: fileFields.fileSize,
+    fileKey: fileFields.fileKey,
     isFavorite: z.boolean().optional(),
     isPinned: z.boolean().optional(),
   })

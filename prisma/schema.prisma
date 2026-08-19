@@ -95,6 +95,7 @@ model Item {
   contentType ContentType
   content     String?     @db.Text // For TEXT types
   fileUrl     String? // R2 URL for FILE types
+  fileKey     String? // R2 file key
   fileName    String? // Original filename
   fileSize    Int? // Size in bytes
   url         String? // For URL/link types
