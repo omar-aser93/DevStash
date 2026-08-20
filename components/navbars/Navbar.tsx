@@ -5,21 +5,29 @@ import { FolderPlus, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarMobile } from "./SidebarMobile";
 import { CreateItemDialog } from "@/components/CreateItemDialog";
-import { SidebarContentProps } from "./SidebarContent";
+import { CollectionFormDialog } from "@/components/collections/CollectionFormDialog";
+import { SidebarContentProps } from "@/components/navbars/SidebarContent";
+import Link from "next/link";
 
 
-export function Navbar(sidebarProps: Omit<SidebarContentProps, "collapsed" | "setCollapsed" | "mobile">) {
+interface NavbarProps extends Omit<SidebarContentProps, "collapsed" | "setCollapsed" | "mobile"> {
+  collections: { id: string; name: string }[];
+}
+
+
+export function Navbar({ collections, ...sidebarProps }: NavbarProps) {
   const [createOpen, setCreateOpen] = useState(false);
+  const [collectionOpen, setCollectionOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-background flex h-16 items-center border-b px-4 sm:px-6">
       {/* Left */}
       <div className="flex flex-1 items-center gap-3">
         <SidebarMobile {...sidebarProps}/>
-        <a href="/dashboard" className="flex items-center gap-2 font-semibold">
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">DS</span>
           <span className="hidden text-lg sm:inline">DevStash</span>
-        </a>
+        </Link>
       </div>
 
       {/* Center */}
@@ -37,7 +45,12 @@ export function Navbar(sidebarProps: Omit<SidebarContentProps, "collapsed" | "se
 
       {/* Right */}
       <div className="flex flex-1 justify-end gap-2">
-        <Button aria-label="New collection" className="size-8 sm:w-auto sm:px-2.5" variant="outline">
+        <Button
+          aria-label="New collection"
+          className="size-8 sm:w-auto sm:px-2.5"
+          variant="outline"
+          onClick={() => setCollectionOpen(true)}
+        >
           <FolderPlus aria-hidden="true" />
           <span className="hidden sm:inline">New collection</span>
         </Button>
@@ -51,7 +64,8 @@ export function Navbar(sidebarProps: Omit<SidebarContentProps, "collapsed" | "se
         </Button>
       </div>
 
-      <CreateItemDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateItemDialog open={createOpen} onOpenChange={setCreateOpen} collections={collections}/>
+      <CollectionFormDialog open={collectionOpen} onOpenChange={setCollectionOpen} />
     </header>
   );
 }

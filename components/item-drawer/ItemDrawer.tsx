@@ -20,16 +20,17 @@ import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { FileUpload } from "@/components/FileUpload";
 import Image from "next/image";
 import { formatFileSize } from "@/lib/utils";
+import { CollectionSelect } from "@/components/CollectionSelect";
 
 
 export function ItemDrawer() {
   const router = useRouter();        // Navigation hook
   // Item drawer states
-  const { isOpen, itemId, closeDrawer } = useItemDrawer();
-  const [item, setItem] = useState<FullItem | null>(null);
+  const { isOpen, itemId, closeDrawer, collections } = useItemDrawer();
+  const [item, setItem] = useState<FullItem & { collectionIds: string[];} | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<FullItem>>({});
+  const [formData, setFormData] = useState<Partial<FullItem & { collectionIds: string[]; }>>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [, startTransition] = useTransition();
@@ -80,6 +81,11 @@ export function ItemDrawer() {
           url: item.url,
           language: item.language,
           tags: item.tags,
+          fileUrl: item.fileUrl,
+          fileKey: item.fileKey,
+          fileName: item.fileName,
+          fileSize: item.fileSize,
+          collectionIds: item.collections.map((c) => c.id),
         });
       });
     }
@@ -111,6 +117,7 @@ export function ItemDrawer() {
         fileKey: formData.fileKey,
         fileName: formData.fileName,
         fileSize: formData.fileSize,
+        collectionIds: formData.collectionIds,
       });
       if (result.success) {
         toast.success("Item updated");
@@ -158,17 +165,6 @@ export function ItemDrawer() {
         toast.error(result.error || "Failed to update");
       }
     });
-  };
-
-  // Copy content
-  const handleCopy = () => {
-    const text = item?.content || item?.url || "";
-    if (text) {
-      navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
-    } else {
-      toast.info("Nothing to copy");
-    }
   };
 
   // Download file handler
@@ -318,6 +314,16 @@ export function ItemDrawer() {
               />
             </div>
           )}
+
+          <div>
+          <label className="text-xs font-medium text-muted-foreground">Collections</label>
+          <CollectionSelect
+            value={formData.collectionIds || []}
+            onChange={(ids) => updateField("collectionIds", ids)}
+            options={collections}
+            placeholder="Select collections..."
+          />
+        </div>
                     
           {/* Tags */}
           <div>
@@ -340,7 +346,7 @@ export function ItemDrawer() {
           </div>
 
           {/* Save/Cancel buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <div className="flex justify-end gap-2 py-4 border-t">
             <Button variant="outline" size="sm" onClick={handleCancel}>
               <X className="mr-2 size-4" /> Cancel
             </Button>
@@ -406,10 +412,18 @@ export function ItemDrawer() {
           )
         )}
         {item.contentType === "URL" && item.url && (
-          <div className="rounded-md bg-muted/30 p-3 text-sm overflow-y-auto border">
-            <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+          <div className="rounded-md bg-muted/30 p-3 text-sm overflow-y-auto border flex items-center gap-2">
+            <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex-1 truncate">
               {item.url}
             </a>
+            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0"
+              onClick={async () => {
+                await navigator.clipboard.writeText(item.url!);
+                toast.success("URL copied");
+              }}
+            >
+              <Copy className="size-3.5" />
+            </Button>
           </div>
         )}
         {/* File/Image preview */}
@@ -431,13 +445,9 @@ export function ItemDrawer() {
                 </div>
                 {item.fileUrl && (item.fileName?.toLowerCase().match(/\.(png|jpg|jpeg|gif|webp|svg)$/)) && (
                   <div className="mt-2 rounded-md overflow-hidden border max-h-80">
-                    <Image
-                      src={item.fileUrl}
-                      alt={item.fileName}
-                      width={400}
-                      height={300}
-                      className="h-auto w-full object-contain"
-                    />
+                    <div className="relative w-full aspect-video">
+                      <Image src={item.fileUrl} alt={item.fileName} fill className="object-contain" loading="lazy"/>
+                    </div>
                   </div>
                 )}
               </div>
@@ -457,7 +467,7 @@ export function ItemDrawer() {
         </div>
 
         {/* Action Bar (view mode) */}
-        <div className="border-t pt-4 space-y-3">
+        <div className="border-t py-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleToggleFavorite}>
               <Star className={`size-4 ${item.isFavorite ? "fill-yellow-400 text-yellow-400" : ""}`} />
@@ -467,17 +477,11 @@ export function ItemDrawer() {
               <Pin className={`size-4 ${item.isPinned ? "text-blue-400" : ""}`} />
               Pin
             </Button>
-            <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleCopy}>
-              <Copy className="size-4" />
-              Copy
-            </Button>
             <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setIsEditing(true)}>
               <Pencil className="size-4" />
               Edit
             </Button>
-          </div>
-          <div className="py-4 border-t flex items-center justify-end">
-            <Button variant="ghost" size="sm" onClick={handleDelete} className="ml-auto text-red-500 hover:text-red-600 hover:bg-red-500/10 py-2" >
+            <Button variant="ghost" size="sm" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-500/10 gap-1.5" >
               <Trash2 className="size-4" />
               Delete
             </Button>

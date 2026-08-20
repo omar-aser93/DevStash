@@ -12,15 +12,17 @@ import { createItem } from "@/lib/actions/itemsActions";
 import { CodeEditor } from "@/components/CodeEditor";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { FileUpload } from "@/components/FileUpload";
+import { CollectionSelect } from "@/components/CollectionSelect";
 
 type ItemTypeName = "snippet" | "prompt" | "command" | "note" | "link" | "file" | "image";
 
 interface CreateItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  collections: { id: string; name: string }[];
 }
 
-export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) {
+export function CreateItemDialog({ open, onOpenChange, collections }: CreateItemDialogProps) {
   const router = useRouter();           // navigation hook
   // form states
   const [type, setType] = useState<ItemTypeName>("snippet");
@@ -31,6 +33,7 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
   const [language, setLanguage] = useState("");
   const [tags, setTags] = useState("");
   const [fileData, setFileData] = useState<{ url: string; key: string; fileName: string; fileSize: number; mimeType: string;} | null>(null);
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
   // reset form handler
@@ -43,6 +46,7 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
     setLanguage("");
     setTags("");
     setFileData(null);
+    setCollectionIds([]);
   };
 
   // form submit handler
@@ -68,6 +72,7 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
         fileName: fileData?.fileName || null,
         fileSize: fileData?.fileSize || null,
         fileKey: fileData?.key || null,
+        collectionIds,
       });
 
       if (result.success) {
@@ -111,7 +116,7 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
           {/* Title */}
           <div>
             <label className="text-xs font-medium text-muted-foreground">Title *</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter title" />
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter title" autoFocus/>
           </div>
 
           {/* Description */}
@@ -180,6 +185,20 @@ export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) 
             </div>
           )}
 
+          {/* Collections */}
+          {collections.length > 0 && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">
+                Collections
+              </label>
+              <CollectionSelect
+                value={collectionIds}
+                onChange={setCollectionIds}
+                options={collections}
+                placeholder="Select collections..."
+              />
+            </div>
+          )}
           {/* Tags */}
           <div>
             <label className="text-xs font-medium text-muted-foreground">Tags (comma-separated)</label>

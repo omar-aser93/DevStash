@@ -30,6 +30,7 @@ export const createItemSchema = z
     fileName: fileFields.fileName,
     fileSize: fileFields.fileSize,   
     fileKey: fileFields.fileKey, 
+    collectionIds: z.array(z.string()).optional().default([]),
   })
   .superRefine((data, ctx) => {
     const type = data.typeName.toLowerCase();
@@ -66,7 +67,24 @@ export const updateItemSchema = z
     fileKey: fileFields.fileKey,
     isFavorite: z.boolean().optional(),
     isPinned: z.boolean().optional(),
+    collectionIds: z.array(z.string()).optional().default([]),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",
   });
+
+
+/*********************************************************/
+
+export const createCollectionSchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+  description: z.string().trim().optional().nullable(),
+  defaultTypeId: z.string().optional().nullable(), // optional for now
+});
+
+export const updateCollectionSchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  description: z.string().trim().optional().nullable(),
+  isFavorite: z.boolean().optional(),
+  defaultTypeId: z.string().optional().nullable(),
+});

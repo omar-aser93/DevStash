@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ItemDrawerProvider } from "@/components/item-drawer/ItemDrawerProvider";
 import { Toaster } from "sonner";
 ;
 
@@ -13,7 +12,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" data-scroll-behavior="smooth" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        <ItemDrawerProvider>{children} <Toaster position="top-right" /></ItemDrawerProvider>
+        {children} <Toaster position="top-right" />
       </body>
     </html>
   );

@@ -7,6 +7,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentCollectionCard } from "@/components/dashboard/RecentCollectionCard";
 import { ItemCard } from "@/components/dashboard/ItemCard";
 import { RecentItemRow } from "@/components/dashboard/RecentItemRow";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Dashboard | DevStash",
@@ -81,9 +82,9 @@ export default async function DashboardPage() {
                 <Folder className="size-4 text-muted-foreground" />
                 Recent Collections
               </h2>
-              <a href="/collections" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1" >
+              <Link href="/dashboard/collections" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1" >
                 View all <ArrowRight className="size-3" />
-              </a>
+              </Link>
             </div>
 
             <div className="rounded-xl border bg-card/30 p-4">

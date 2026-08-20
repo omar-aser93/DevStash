@@ -42,12 +42,7 @@ export function MarkdownEditor({
   };
 
   return (
-    <div
-      className={cn(
-        "rounded-md border bg-[#1e1e1e] overflow-hidden",
-        className
-      )}
-    >
+    <div className={cn("rounded-md border bg-[#1e1e1e] overflow-hidden", className )} >
       {/* Header with macOS dots */}
       <div className="flex items-center justify-between bg-[#2d2d2d] px-3 py-2 border-b border-border">
         <div className="flex items-center gap-2">

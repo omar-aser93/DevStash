@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Folder, PanelLeftClose, PanelLeftOpen, Star } from "lucide-react";
+import { ArrowRight, ChevronDown, Folder, PanelLeftClose, PanelLeftOpen, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useState } from "react";
 import type { ItemTypeWithCount } from "@/lib/queries/items";
 import type { SidebarCollection } from "@/lib/queries/collections";
 import { UserNavMenu } from "./UserNavMenu";
+import Link from "next/link";
 
 export interface SidebarUser {
   name: string;
@@ -76,7 +77,7 @@ export function SidebarContent({
               const styles = getColorStyles(type.color);
               const isPro = PRO_ITEM_TYPES.has(type.name.toLowerCase());
               return (
-                <a
+                <Link
                   className="flex h-9 items-center gap-3 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   href={`/dashboard/items/${type.name}`}
                   key={type.id}
@@ -95,7 +96,7 @@ export function SidebarContent({
                     </Badge>
                   )}
                   {!collapsed && <span className="sidebar-text text-xs">{type.itemCount}</span>}
-                </a>
+                </Link>
               );
             })}
           </div>
@@ -120,8 +121,8 @@ export function SidebarContent({
                     <p className="text-xs text-muted-foreground mx-2">No favorite collections.</p>
                   )}
                   {favoriteCollections.map((collection) => (
-                    <a
-                      href={`/collections/${collection.id}`}
+                    <Link
+                      href={`/dashboard/collections/${collection.id}`}
                       key={collection.id}
                       title={collection.name}
                       className="flex h-9 items-center gap-3 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -129,7 +130,7 @@ export function SidebarContent({
                       <Folder aria-hidden="true" className="size-4 shrink-0" />
                       <span className="sidebar-text min-w-0 flex-1 truncate">{collection.name}</span>
                       <Star aria-hidden="true" className="sidebar-text size-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
-                    </a>
+                    </Link>
                   ))}
                 </div>
 
@@ -139,16 +140,19 @@ export function SidebarContent({
                     <p className="text-xs text-muted-foreground mx-2">No recent collections.</p>
                   )}
                   {recentCollections.map((collection) => (
-                    <a
-                      href={`/collections/${collection.id}`}
+                    <Link
+                      href={`/dashboard/collections/${collection.id}`}
                       key={collection.id}
                       title={collection.name}
                       className="flex h-9 items-center gap-3 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     >
                       <Folder aria-hidden="true" className="size-4 shrink-0" />
                       <span className="sidebar-text min-w-0 flex-1 truncate">{collection.name}</span>
-                    </a>
+                    </Link>                  
                   ))}
+                  <Link href="/dashboard/collections" className="text-xs mx-3 my-4 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1" >
+                    ... View all <ArrowRight className="size-3" />
+                  </Link>
                 </div>
               </div>
             )}

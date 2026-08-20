@@ -31,7 +31,7 @@ export async function createItem(data: unknown) {
     return { success: false, error: result.error.issues[0].message };
   }
 
-  const { typeName, title, description, tags, content, url, language, fileUrl, fileName, fileSize, fileKey } = result.data;
+  const { typeName, title, description, tags, content, url, language, fileUrl, fileName, fileSize, fileKey, collectionIds } = result.data;
   const userId = session.user.id;
 
   try {
@@ -76,6 +76,20 @@ export async function createItem(data: unknown) {
       });
     }
 
+    // 6. Handle collections
+    if (collectionIds && collectionIds.length > 0) {
+      await prisma.item.update({
+        where: { id: item.id },
+        data: {
+          collections: {
+            create: collectionIds.map((collectionId) => ({
+              collection: { connect: { id: collectionId } },
+            })),
+          },
+        },
+      });
+    }
+
     revalidatePath("/dashboard");
     return { success: true, data: item };
   } catch (error) {
@@ -97,7 +111,7 @@ export async function updateItem(itemId: string, data: unknown) {
     return { success: false, error: result.error.issues[0].message };
   }
 
-  const { title, description, tags, content, url, language, fileUrl, fileName, fileSize, isFavorite, isPinned } = result.data;
+  const { title, description, tags, content, url, language, fileUrl, fileName, fileSize, isFavorite, isPinned, collectionIds } = result.data;
 
   try {
     // Get existing item + file info
@@ -131,7 +145,7 @@ export async function updateItem(itemId: string, data: unknown) {
     if (fileUrl !== undefined) {
       updateData.fileUrl = fileUrl || null;
       updateData.fileName = fileName || null;
-      updateData.fileSize = fileSize ?? null;
+      updateData.fileSize = fileSize ?? null;      
       // File was removed
       if (fileUrl === null && existing.fileKey) {
         await deleteFileFromR2(existing.fileKey);
@@ -157,6 +171,28 @@ export async function updateItem(itemId: string, data: unknown) {
         await prisma.item.update({
           where: { id: itemId },
           data: { tags: { connectOrCreate: tagOperations } },
+        });
+      }
+    }
+
+    // Handle collections
+    if (collectionIds !== undefined) {
+      // Disconnect all existing
+      await prisma.item.update({
+        where: { id: itemId },
+        data: { collections: { deleteMany: {} } },
+      });
+      // Connect new ones
+      if (collectionIds.length > 0) {
+        await prisma.item.update({
+          where: { id: itemId },
+          data: {
+            collections: {
+              create: collectionIds.map((collectionId) => ({
+                collection: { connect: { id: collectionId } },
+              })),
+            },
+          },
         });
       }
     }

@@ -1,6 +1,8 @@
 import { Star } from "lucide-react";
 import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
 import type { CollectionWithMeta } from "@/lib/queries/collections";
+import Link from "next/link";
+import { CollectionCardDropdown } from "@/components/collections/CollectionCardDropdown";
 
 export interface RecentCollectionCardProps {
   collection: CollectionWithMeta;
@@ -15,15 +17,18 @@ export function RecentCollectionCard({ collection }: RecentCollectionCardProps) 
       style={{ ...styles.bg, ...styles.borderLeft }}
     >
       <div className="space-y-1">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <h3 className="font-medium text-sm line-clamp-1 group-hover:text-foreground transition-colors">
-            <a href={`/collections/${collection.id}`} className="hover:underline">
+            <Link href={`/dashboard/collections/${collection.id}`} className="hover:underline">
               {collection.name}
-            </a>
+            </Link>
           </h3>
-          {collection.isFavorite && (
-            <Star className="size-3.5 fill-yellow-400 text-yellow-400 shrink-0" />
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {collection.isFavorite && (
+              <Star className="size-3.5 fill-yellow-400 text-yellow-400" />
+            )}
+            <CollectionCardDropdown collection={collection} />
+          </div>
         </div>
         <p className="text-xs text-muted-foreground line-clamp-2 min-h-8">
           {collection.description}
@@ -34,9 +39,8 @@ export function RecentCollectionCard({ collection }: RecentCollectionCardProps) 
           {collection.itemCount} {collection.itemCount === 1 ? "item" : "items"}
         </span>
 
-        {/* Small icons for contained item types instead of "Open" */}
-        <a
-          href={`/collections/${collection.id}`}
+        <Link
+          href={`/dashboard/collections/${collection.id}`}
           className="flex items-center gap-1.5 p-1 -m-1 rounded-md hover:bg-muted/20 transition-colors"
           title="Open collection"
         >
@@ -57,11 +61,9 @@ export function RecentCollectionCard({ collection }: RecentCollectionCardProps) 
               })}
             </div>
           ) : (
-            <span className="text-[10px] font-semibold text-muted-foreground">
-              Empty
-            </span>
+            <span className="text-[10px] font-semibold text-muted-foreground">Empty</span>
           )}
-        </a>
+        </Link>
       </div>
     </div>
   );
