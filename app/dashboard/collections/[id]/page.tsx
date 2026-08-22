@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import { getCurrentUserId } from "@/lib/session";
-import { getCollectionById } from "@/lib/queries/collections";
+import { getCollectionById, getCollectionItems } from "@/lib/queries/collections";
 import { ItemCard } from "@/components/dashboard/ItemCard";
 import { Folder, Calendar } from "lucide-react";
 import { CollectionDetailActions } from "@/components/collections/CollectionDetailActions";
+import { CustomPagination } from "@/components/CustomPagination";
 
 export const metadata = {
   title: "Collection | DevStash",
@@ -12,17 +13,23 @@ export const metadata = {
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function CollectionDetailPage({ params }: PageProps) {
+export default async function CollectionDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { page: pageParam } = await searchParams;
   const userId = await getCurrentUserId();
 
   const collection = await getCollectionById(userId, id);
-
   if (!collection) {
     notFound();
   }
+
+  const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+  const limit = 20; // COLLECTIONS_PER_PAGE
+
+  const { items, total, totalPages } = await getCollectionItems(userId, id, page, limit);
 
   return (
     <div className="flex-1 overflow-y-auto bg-background/50 p-6 space-y-6">
@@ -45,22 +52,28 @@ export default async function CollectionDetailPage({ params }: PageProps) {
             Created {new Date(collection.createdAt).toLocaleDateString()}
           </span>
           <span>
-            {collection.items.length} item{collection.items.length !== 1 ? "s" : ""}
+            {total} item{total !== 1 ? "s" : ""}
           </span>
         </div>
       </div>
 
-      {collection.items.length === 0 ? (
+      {items.length === 0 ? (
         <div className="rounded-xl border bg-card/30 p-12 text-center">
           <p className="text-sm text-muted-foreground">This collection is empty.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {collection.items.map((item) => (
+          {items.map((item) => (
             <ItemCard key={item.id} item={item} />
           ))}
         </div>
       )}
+
+      <CustomPagination
+        currentPage={page}
+        totalPages={totalPages}
+        basePath={`/dashboard/collections/${id}`}
+      />
     </div>
   );
 }

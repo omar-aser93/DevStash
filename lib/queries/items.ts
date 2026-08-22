@@ -78,7 +78,7 @@ interface RawItem {
   contentType: string ;
 }
 
-function mapItem(item: RawItem): ItemWithType {
+export function mapItem(item: RawItem): ItemWithType {
   return {
     id: item.id,
     title: item.title,
@@ -110,6 +110,8 @@ export interface ItemTypeWithCount {
   itemCount: number;
 }
 
+const ITEMS_PER_PAGE = 21;
+
 
 /** Pinned items for the dashboard's pinned-items section. */
 export async function getPinnedItems(userId: string, limit = 4): Promise<ItemWithType[]> {
@@ -123,6 +125,8 @@ export async function getPinnedItems(userId: string, limit = 4): Promise<ItemWit
   return items.map(mapItem);
 }
 
+
+
 /** Most recently updated items for the dashboard's recent-items list. */
 export async function getRecentItems(userId: string, limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
@@ -135,6 +139,8 @@ export async function getRecentItems(userId: string, limit = 10): Promise<ItemWi
   return items.map(mapItem);
 }
 
+
+
 /** Stats used by the dashboard's top-level stat cards. */
 export async function getItemStats(userId: string) {
   const [totalItems, favoriteItemsCount] = await Promise.all([
@@ -144,6 +150,7 @@ export async function getItemStats(userId: string) {
 
   return { totalItems, favoriteItemsCount };
 }
+
 
 
 /**
@@ -175,35 +182,43 @@ export const getItemTypesWithCounts = cache(async (userId: string): Promise<Item
 });
 
 
-/** Items filtered by a specific item type (system or user-created). */
-/** Returns the items and the type object. If type not found, throws notFound(). */
-export async function getItemsByType(userId: string, typeName: string) {
+
+/** Items filtered by a specific item type (system or user-created) with pagination. */
+export async function getItemsByType(
+  userId: string,
+  typeName: string,
+  page: number = 1,
+  limit: number = ITEMS_PER_PAGE
+) {
   const itemType = await prisma.itemType.findFirst({
     where: {
       name: typeName,
-      OR: [
-        { isSystem: true },
-        { userId: userId },
-      ],
+      OR: [{ isSystem: true }, { userId }],
     },
   });
 
   if (!itemType) {
-    notFound(); // Triggers 404
+    notFound();
   }
 
-  const items = await prisma.item.findMany({
-    where: {
-      userId,
-      itemTypeId: itemType?.id,
-    },
-    orderBy: { updatedAt: "desc" },
-    include: itemInclude,
-  });
+  const skip = (page - 1) * limit;
+
+  const [items, total] = await Promise.all([
+    prisma.item.findMany({
+      where: { userId, itemTypeId: itemType.id },
+      orderBy: { updatedAt: "desc" },
+      skip,
+      take: limit,
+      include: itemInclude,
+    }),
+    prisma.item.count({ where: { userId, itemTypeId: itemType.id } }),
+  ]);
 
   return {
     items: items.map(mapItem),
     type: itemType,
+    total,
+    totalPages: Math.ceil(total / limit),
   };
 }
 
@@ -259,4 +274,38 @@ export async function getItemById(
       name: ic.collection.name,
     })),
   };
+}
+
+
+
+/** Get all items with minimal fields for search (title, content preview, type) */
+export async function getAllItemsForSearch(userId: string) {
+  const items = await prisma.item.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      itemType: {
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          color: true,
+        },
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+  return items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    content: item.content?.slice(0, 150) ?? "",
+    itemType: {
+      id: item.itemType.id,
+      name: item.itemType.name,
+      icon: item.itemType.icon,
+      color: item.itemType.color,
+    },
+  }));
 }

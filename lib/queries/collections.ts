@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { cache } from "react";
-import { ItemWithType } from "./items";
+import { ItemWithType, mapItem } from "@/lib/queries/items";
 
 export interface CollectionItemType {
   id: string;
@@ -49,6 +49,7 @@ const RECENT_COLLECTION_LIMIT = 6;
 const COLLECTION_TYPE_SAMPLE_LIMIT = 24;
 const SIDEBAR_FAVORITES_LIMIT = 6;
 const SIDEBAR_RECENT_LIMIT = 3;
+const COLLECTIONS_PER_PAGE = 21;
 
 
 /**
@@ -350,4 +351,62 @@ export async function getAllCollectionsWithMeta(userId: string): Promise<Collect
       dominantColor,
     };
   });
+}
+
+
+
+/** Get all collections with item count for search */
+export async function getAllCollectionsWithCount(userId: string) {
+  return prisma.collection.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      name: true,
+      _count: {
+        select: { items: true },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
+
+
+/** Get items in a collection with pagination. */
+export async function getCollectionItems(
+  userId: string,
+  collectionId: string,
+  page: number = 1,
+  limit: number = COLLECTIONS_PER_PAGE
+) {
+  const skip = (page - 1) * limit;
+
+  const [items, total] = await Promise.all([
+    prisma.item.findMany({
+      where: {
+        collections: { some: { collectionId } },
+        userId,
+      },
+      orderBy: { updatedAt: "desc" },
+      skip,
+      take: limit,
+      include: {
+        itemType: true,
+        tags: true,
+      },
+    }),
+    prisma.item.count({
+      where: {
+        collections: { some: { collectionId } },
+        userId,
+      },
+    }),
+  ]);
+
+  // Map to ItemWithType using the existing mapItem function
+  return {
+    items: items.map(mapItem),
+    total,
+    totalPages: Math.ceil(total / limit),
+  };
 }

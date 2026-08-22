@@ -4,6 +4,7 @@ import { ItemCard } from "@/components/dashboard/ItemCard";
 import { ImageCard } from "@/components/dashboard/ImageCard";
 import { FileListItem } from "@/components/dashboard/FileListItem";
 import { FolderOpen } from "lucide-react";
+import { CustomPagination } from "@/components/CustomPagination";
 
 export const metadata = {
   title: "Items by Type | DevStash",
@@ -12,29 +13,35 @@ export const metadata = {
 
 interface PageProps {
   params: Promise<{ type: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function ItemsByTypePage({ params }: PageProps) {
+export default async function ItemsByTypePage({ params, searchParams }: PageProps) {
   const { type } = await params;
+  const { page: pageParam } = await searchParams;
   const userId = await getCurrentUserId();
 
-  const { items, type: itemType } = await getItemsByType(userId, type);
+  const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+  const limit = 20; // ITEMS_PER_PAGE
 
-  // Determine which view to render based on the item type name
+  const { items, type: itemType, total, totalPages } = await getItemsByType(
+    userId,
+    type,
+    page,
+    limit
+  );
+
   const typeName = type.toLowerCase();
 
   const renderItems = () => {
     if (items.length === 0) {
       return (
         <div className="rounded-xl border bg-card/30 p-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            No items found in this type.
-          </p>
+          <p className="text-sm text-muted-foreground">No items found in this type.</p>
         </div>
       );
     }
 
-    // Image gallery – 3 columns
     if (typeName === "image") {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -45,7 +52,6 @@ export default async function ItemsByTypePage({ params }: PageProps) {
       );
     }
 
-    // File list – single column
     if (typeName === "file") {
       return (
         <div className="space-y-2">
@@ -56,7 +62,6 @@ export default async function ItemsByTypePage({ params }: PageProps) {
       );
     }
 
-    // Default grid for other types (snippet, prompt, command, note, link, etc.)
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map((item) => (
@@ -74,11 +79,17 @@ export default async function ItemsByTypePage({ params }: PageProps) {
           {itemType.name.charAt(0).toUpperCase() + itemType.name.slice(1)}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {items.length} item{items.length !== 1 ? "s" : ""} in this type
+          {total} item{total !== 1 ? "s" : ""} in this type
         </p>
       </div>
 
       {renderItems()}
+
+      <CustomPagination
+        currentPage={page}
+        totalPages={totalPages}
+        basePath={`/dashboard/items/${type}`}
+      />
     </div>
   );
 }

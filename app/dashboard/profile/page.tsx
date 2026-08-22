@@ -21,7 +21,7 @@ export default async function ProfilePage() {
         </p>
       </div>
 
-      <div className="max-w-2xl rounded-xl border bg-card/40 p-6 space-y-6">
+      <div className="max-w-full rounded-xl border bg-card/40 p-6 space-y-6">
         <div className="flex items-center gap-4">
           <UserAvatar
             name={user.name}
