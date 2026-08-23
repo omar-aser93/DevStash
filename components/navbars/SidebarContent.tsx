@@ -150,9 +150,10 @@ export function SidebarContent({
                       <span className="sidebar-text min-w-0 flex-1 truncate">{collection.name}</span>
                     </Link>                  
                   ))}
+                  {recentCollections.length > 0 &&
                   <Link href="/dashboard/collections" className="text-xs mx-3 my-4 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1" >
                     ... View all <ArrowRight className="size-3" />
-                  </Link>
+                  </Link>}
                 </div>
               </div>
             )}
