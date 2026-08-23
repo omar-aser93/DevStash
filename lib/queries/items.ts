@@ -206,7 +206,7 @@ export async function getItemsByType(
   const [items, total] = await Promise.all([
     prisma.item.findMany({
       where: { userId, itemTypeId: itemType.id },
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
       skip,
       take: limit,
       include: itemInclude,
@@ -308,4 +308,16 @@ export async function getAllItemsForSearch(userId: string) {
       color: item.itemType.color,
     },
   }));
+}
+
+
+
+/** Get all favorited items, ordered by most recently updated. */
+export async function getFavoriteItems(userId: string): Promise<ItemWithType[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, isFavorite: true },
+    orderBy: { updatedAt: "desc" },
+    include: itemInclude,
+  });
+  return items.map(mapItem);
 }

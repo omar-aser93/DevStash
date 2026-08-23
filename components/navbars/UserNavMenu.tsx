@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LogOut, User, Settings, ChevronsUpDown } from "lucide-react";
+import { LogOut, User, Settings, ChevronsUpDown, Star } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -92,6 +92,10 @@ export function UserNavMenu({ user, collapsed }: UserNavMenuProps) {
             <DropdownMenuItem render={<Link href="/dashboard/profile" className="flex w-full items-center gap-2" />}>
               <User className="size-4 shrink-0 text-muted-foreground" />
               <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href="/dashboard/favorites" className="flex w-full items-center gap-2" />}>
+              <Star className="size-4 shrink-0  fill-yellow-400 text-yellow-400" />
+              <span>Favorites</span>
             </DropdownMenuItem>
             <DropdownMenuItem render={<Link href="/dashboard/settings" className="flex w-full items-center gap-2" />}>
               <Settings className="size-4 shrink-0 text-muted-foreground" />

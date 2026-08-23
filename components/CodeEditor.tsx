@@ -5,6 +5,7 @@ import Editor, { OnMount } from "@monaco-editor/react";
 import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useEditorPreferences } from "@/components/settings/EditorPreferencesContext";
 import type { editor } from "monaco-editor";
 
 interface CodeEditorProps {
@@ -16,16 +17,11 @@ interface CodeEditorProps {
   height?: string | number;
 }
 
-export function CodeEditor({
-  value,
-  onChange,
-  language = "plaintext",
-  readOnly = false,
-  className,
-  height = 400,
-}: CodeEditorProps) {
+export function CodeEditor({ value, onChange, language = "plaintext", readOnly = false, className, height = 400,}: CodeEditorProps) {
+  const { preferences } = useEditorPreferences();
   const [copied, setCopied] = useState(false);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+   
 
   const handleCopy = async () => {
     if (!editorRef.current) return;
@@ -66,6 +62,7 @@ export function CodeEditor({
     return map[language?.toLowerCase()] || language || "plaintext";
   })();
 
+  
   return (
     <div className={cn("rounded-md border bg-muted/20 overflow-hidden", className)}>
       {/* macOS‑style header */}
@@ -111,24 +108,24 @@ export function CodeEditor({
           onChange={(val) => onChange?.(val || "")}
           options={{
             readOnly,
-            minimap: { enabled: false },
+            minimap: { enabled: preferences.minimap },
             scrollbar: {
               vertical: "visible",
               horizontal: "visible",
               verticalScrollbarSize: 8,
               horizontalScrollbarSize: 8,
             },
-            fontSize: 13,
+            fontSize: preferences.fontSize,
             fontFamily: "var(--font-mono), monospace",
             lineNumbers: "on",
             renderWhitespace: "selection",
-            tabSize: 2,
-            wordWrap: "on",
+            tabSize: preferences.tabSize,
+            wordWrap: preferences.wordWrap ? "on" : "off",
             automaticLayout: true,
             scrollBeyondLastLine: false,
           }}
           onMount={handleEditorMount}
-          theme="vs-dark"
+          theme={preferences.theme}
         />
       </div>
   

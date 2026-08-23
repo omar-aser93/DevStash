@@ -203,6 +203,7 @@ export async function updateItem(itemId: string, data: unknown) {
     });
 
     revalidatePath("/dashboard");
+    revalidatePath(`/dashboard/favorites`);
     return { success: true };
   } catch (error) {
     console.error("Update item error:", error);

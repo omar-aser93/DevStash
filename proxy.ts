@@ -23,7 +23,7 @@ export const proxy = auth((req) => {
   }
 
   // If already logged in and trying to access sign-in or register → redirect to dashboard
-  if (isAuthenticated && (pathname === '/sign-in' || pathname === '/register')) {
+  if (isAuthenticated && (pathname === '/sign-in' || pathname === '/register' || pathname === '/')) {
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
 
@@ -32,5 +32,5 @@ export const proxy = auth((req) => {
 });
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/sign-in', '/register'],
+  matcher: ['/dashboard/:path*', '/sign-in', '/register', '/'],
 };

@@ -81,6 +81,9 @@ export async function updateCollection(collectionId: string, data: unknown) {
     });
 
     revalidatePath("/dashboard");
+    revalidatePath(`/dashboard/collections`);
+    revalidatePath(`/dashboard/collections/${collectionId}`);
+    revalidatePath(`/dashboard/favorites`);
     return { success: true, data: updated };
   } catch (error) {
     console.error("Update collection error:", error);

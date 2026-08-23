@@ -42,6 +42,7 @@ export interface CollectionWithItems {
 export interface SidebarCollection {
   id: string;
   name: string;
+  updatedAt?: Date;
 }
 
 const DEFAULT_COLOR = "#6b7280";
@@ -387,7 +388,7 @@ export async function getCollectionItems(
         collections: { some: { collectionId } },
         userId,
       },
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
       skip,
       take: limit,
       include: {
@@ -409,4 +410,15 @@ export async function getCollectionItems(
     total,
     totalPages: Math.ceil(total / limit),
   };
+}
+
+
+
+/** Get all favorited collections, ordered by most recently updated. */
+export async function getFavoriteCollections(userId: string): Promise<SidebarCollection[]> {
+  return prisma.collection.findMany({
+    where: { userId, isFavorite: true },
+    orderBy: { updatedAt: "desc" },
+    select: { id: true, name: true, updatedAt: true },
+  });
 }

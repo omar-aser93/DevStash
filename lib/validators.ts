@@ -76,15 +76,41 @@ export const updateItemSchema = z
 
 /*********************************************************/
 
+// Create collection schema
 export const createCollectionSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   description: z.string().trim().optional().nullable(),
   defaultTypeId: z.string().optional().nullable(), // optional for now
 });
 
+// Update collection schema
 export const updateCollectionSchema = z.object({
   name: z.string().trim().min(1).optional(),
   description: z.string().trim().optional().nullable(),
   isFavorite: z.boolean().optional(),
   defaultTypeId: z.string().optional().nullable(),
 });
+
+
+/*********************************************************/
+
+// Change password schema
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+
+// Editor preferences schema
+export const editorPreferencesSchema = z.object({
+  fontSize: z.number().int().min(8).max(24).default(13),
+  tabSize: z.number().int().min(1).max(8).default(2),
+  wordWrap: z.boolean().default(true),
+  minimap: z.boolean().default(false),
+  theme: z.enum(["vs-dark", "monokai", "github-dark"]).default("vs-dark"),
+});
+

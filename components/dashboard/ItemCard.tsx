@@ -1,6 +1,6 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { Pin, Star } from "lucide-react";
 import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
 import type { ItemWithType } from "@/lib/queries/items";
 import { useItemDrawer } from "@/components/item-drawer/useItemDrawer";
@@ -22,7 +22,7 @@ export function ItemCard({ item }: ItemCardProps) {
       style={styles.borderLeft}
     >
       <div className="space-y-2">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span className="p-1.5 rounded-md" style={{ ...styles.bg, ...styles.text }}>
               <ItemTypeIcon name={item.itemType.icon} className="size-3.5" />
@@ -31,9 +31,14 @@ export function ItemCard({ item }: ItemCardProps) {
               {item.title}
             </h3>
           </div>
-          {item.isFavorite && (
-            <Star className="size-3.5 fill-yellow-400 text-yellow-400 shrink-0" />
-          )}
+          <div className="flex items-center gap-6 shrink-0">
+            {item.isFavorite && (
+              <Star className="size-3.5 fill-yellow-400 text-yellow-400 shrink-0" />
+            )}
+            {item.isPinned && (
+              <Pin className="size-3.5 shrink-0 text-blue-400 fill-blue-400/20" />
+            )}
+          </div>
         </div>
         <p className="text-xs text-muted-foreground line-clamp-2 min-h-8">
           {item.description}

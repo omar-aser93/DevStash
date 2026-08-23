@@ -60,6 +60,15 @@ export function Navbar({ collections, ...sidebarProps }: NavbarProps) {
       {/* Right */}
       <div className="flex flex-1 justify-end gap-2">
         <Button
+          aria-label="Search"
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={() => setSearchOpen(true)}
+        >
+          <Search className="size-5" />
+        </Button>
+        <Button
           aria-label="New collection"
           className="size-8 sm:w-auto sm:px-2.5"
           variant="outline"

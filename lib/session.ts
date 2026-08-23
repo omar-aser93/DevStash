@@ -7,6 +7,15 @@ export interface SessionUser {
   name: string;
   email: string;
   image?: string | null;
+  createdAt: Date;
+  hasPassword: boolean;
+  editorPreferences: {
+    fontSize?: number;
+    tabSize?: number;
+    wordWrap?: boolean;
+    minimap?: boolean;
+    theme?: string;
+  } | null;
 }
 
 /**
@@ -33,6 +42,9 @@ export async function getCurrentUser(userId: string): Promise<SessionUser> {
       name: true,
       email: true,
       image: true,
+      createdAt: true,
+      password: true,
+      editorPreferences: true,
     },
   });
 
@@ -42,6 +54,9 @@ export async function getCurrentUser(userId: string): Promise<SessionUser> {
       name: user.name ?? "User",
       email: user.email,
       image: user.image,
+      createdAt: user.createdAt,
+      hasPassword: !!user.password,
+      editorPreferences: user.editorPreferences as SessionUser['editorPreferences'],
     };
   }
 
@@ -52,6 +67,9 @@ export async function getCurrentUser(userId: string): Promise<SessionUser> {
       name: session.user.name ?? "User",
       email: session.user.email ?? "",
       image: session.user.image ?? null,
+      createdAt: new Date(), // fallback, but shouldn't happen
+      hasPassword: false,
+      editorPreferences: null,
     };
   }
 

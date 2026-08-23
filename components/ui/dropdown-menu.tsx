@@ -30,11 +30,11 @@ function DropdownMenuContent({
 }) {
   return (
     <DropdownMenuPortal>
-      <Menu.Positioner side={side} align={align} sideOffset={sideOffset}>
+      <Menu.Positioner side={side} align={align} sideOffset={sideOffset} className="z-100">
         <Menu.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            "z-50 min-w-[13rem] overflow-hidden rounded-xl border border-border bg-card p-1 text-card-foreground shadow-xl transition-all duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 outline-none",
+            "min-w-52 overflow-hidden rounded-xl border border-border bg-card p-1 text-card-foreground shadow-xl transition-all duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 outline-none",
             className
           )}
           {...props}
