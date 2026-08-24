@@ -1,3 +1,4 @@
+import { FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -22,13 +23,9 @@ export default function AuthLayout({
       <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Brand identity header */}
         <div className="flex flex-col items-center text-center space-y-2">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground transition-transform group-hover:scale-105">
-              DS
-            </span>
-            <span className="text-2xl font-bold tracking-tight text-foreground">
-              DevStash
-            </span>
+          <Link href="/" className="flex items-center gap-2.5 font-bold text-lg text-[#e4e4ef]">
+            <FolderOpen className="size-7" />
+            DevStash
           </Link>
         </div>
 

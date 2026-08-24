@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FolderPlus, Plus, Search } from "lucide-react";
+import { FolderOpen, FolderPlus, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarMobile } from "./SidebarMobile";
 import { CreateItemDialog } from "@/components/CreateItemDialog";
@@ -26,9 +26,9 @@ export function Navbar({ collections, ...sidebarProps }: NavbarProps) {
       {/* Left */}
       <div className="flex flex-1 items-center gap-3">
         <SidebarMobile {...sidebarProps}/>
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">DS</span>
-          <span className="hidden text-lg sm:inline">DevStash</span>
+        <Link href="/" className="flex items-center gap-2.5 font-bold text-sm sm:text-lg text-[#e4e4ef]">
+          <FolderOpen className="size-5 sm:size-7" />
+          DevStash
         </Link>
       </div>
 
