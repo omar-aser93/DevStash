@@ -3,14 +3,14 @@ import Link from "next/link";
 
 const FOOTER_LINKS = {
   Product: [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
+    { label: "Features", href: "/#features" },
+    { label: "Pricing", href: "/#pricing" },
     { label: "Changelog", href: "/changelog" },
   ],
   Resources: [
-    { label: "Documentation", href: "#" },
+    { label: "Documentation", href: "/docs" },    
+    { label: "Blog", href: "/blog" },
     // { label: "API", href: "#" },
-    { label: "Blog", href: "#" },
   ],
   Company: [
     { label: "About", href: "/about" },
