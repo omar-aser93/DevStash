@@ -321,3 +321,52 @@ export async function getFavoriteItems(userId: string): Promise<ItemWithType[]> 
   });
   return items.map(mapItem);
 }
+
+
+
+/** Get items filtered by a tag (user-owned) with pagination. */
+export async function getItemsByTag(
+  userId: string,
+  tagName: string,
+  page: number = 1,
+  limit: number = ITEMS_PER_PAGE
+) {
+  const tag = await prisma.tag.findFirst({
+    where: {
+      name: tagName,
+      userId,
+    },
+  });
+
+  if (!tag) {
+    notFound();
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [items, total] = await Promise.all([
+    prisma.item.findMany({
+      where: {
+        userId,
+        tags: { some: { id: tag.id } },
+      },
+      orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
+      skip,
+      take: limit,
+      include: itemInclude,
+    }),
+    prisma.item.count({
+      where: {
+        userId,
+        tags: { some: { id: tag.id } },
+      },
+    }),
+  ]);
+
+  return {
+    items: items.map(mapItem),
+    tag,
+    total,
+    totalPages: Math.ceil(total / limit),
+  };
+}

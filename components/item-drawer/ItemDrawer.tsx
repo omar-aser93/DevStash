@@ -21,6 +21,7 @@ import { FileUpload } from "@/components/FileUpload";
 import Image from "next/image";
 import { formatFileSize } from "@/lib/utils";
 import { CollectionSelect } from "@/components/CollectionSelect";
+import Link from "next/link";
 
 
 export function ItemDrawer() {
@@ -30,6 +31,7 @@ export function ItemDrawer() {
   const [item, setItem] = useState<FullItem & { collectionIds: string[];} | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [tagInput, setTagInput] = useState("");
   const [formData, setFormData] = useState<Partial<FullItem & { collectionIds: string[]; }>>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -87,6 +89,7 @@ export function ItemDrawer() {
           fileSize: item.fileSize,
           collectionIds: item.collections.map((c) => c.id),
         });
+        setTagInput(item.tags.join(", "));
       });
     }
   }, [isEditing, item, startTransition]);
@@ -329,11 +332,18 @@ export function ItemDrawer() {
           <div>
             <label className="text-xs font-medium text-muted-foreground">Tags (comma-separated)</label>
             <Input
-              value={formData.tags ? formData.tags.join(", ") : ""}
-              onChange={(e) => {
-                const raw = e.target.value;
-                const tags = raw.split(",").map(s => s.trim()).filter(Boolean);
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onBlur={() => {
+                const tags = tagInput.split(",").map(s => s.trim()).filter(Boolean);
                 updateField("tags", tags);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const tags = tagInput.split(",").map(s => s.trim()).filter(Boolean);
+                  updateField("tags", tags);
+                  e.currentTarget.blur();
+                }
               }}
               placeholder="react, hooks, frontend"
             />
@@ -366,9 +376,11 @@ export function ItemDrawer() {
           <div className="flex flex-wrap gap-1">
             <Tag className="size-4 text-muted-foreground mr-1" />
             {item.tags.map((tag) => (
-              <Badge key={tag} variant="secondary">
-                {tag}
-              </Badge>
+              <Link key={tag} href={`/dashboard/tags/${tag}`}>
+                <Badge variant="secondary" className="cursor-pointer hover:bg-muted/80">
+                  {tag}
+                </Badge>
+              </Link>
             ))}
           </div>
         )}
@@ -446,7 +458,7 @@ export function ItemDrawer() {
                 {item.fileUrl && (item.fileName?.toLowerCase().match(/\.(png|jpg|jpeg|gif|webp|svg)$/)) && (
                   <div className="mt-2 rounded-md overflow-hidden border max-h-80">
                     <div className="relative w-full aspect-video">
-                      <Image src={item.fileUrl} alt={item.fileName} fill className="object-contain" loading="lazy"/>
+                      <Image src={item.fileUrl} alt={item.fileName} fill sizes="(max-width: 640px) 100vw, 540px" className="object-contain" loading="lazy"/>
                     </div>
                   </div>
                 )}
@@ -469,6 +481,10 @@ export function ItemDrawer() {
         {/* Action Bar (view mode) */}
         <div className="border-t py-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
+            <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setIsEditing(true)}>
+              <Pencil className="size-4" />
+              Edit
+            </Button>
             <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleToggleFavorite}>
               <Star className={`size-4 ${item.isFavorite ? "fill-yellow-400 text-yellow-400" : ""}`} />
               Favorite
@@ -476,10 +492,6 @@ export function ItemDrawer() {
             <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleTogglePin}>
               <Pin className={`size-4 ${item.isPinned ? "text-blue-400" : ""}`} />
               Pin
-            </Button>
-            <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setIsEditing(true)}>
-              <Pencil className="size-4" />
-              Edit
             </Button>
             <Button variant="ghost" size="sm" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-500/10 gap-1.5" >
               <Trash2 className="size-4" />

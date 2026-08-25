@@ -3,6 +3,7 @@
 import { useItemDrawer } from "@/components/item-drawer/useItemDrawer";
 import type { ItemWithType } from "@/lib/queries/items";
 import Image from "next/image";
+import Link from "next/link";
 
 interface ImageCardProps {
   item: ItemWithType;
@@ -42,6 +43,21 @@ export function ImageCard({ item }: ImageCardProps) {
           {item.description || "No description"}
         </p>
       </div>
+      {/* Tags */}
+      {item.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 m-1.5">
+          {item.tags.slice(0, 3).map((tag) => (
+            <Link
+                key={tag}
+                href={`/dashboard/tags/${tag}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors no-underline"
+              >
+                {tag}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

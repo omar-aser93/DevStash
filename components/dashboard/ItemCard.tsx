@@ -4,6 +4,7 @@ import { Pin, Star } from "lucide-react";
 import { ItemTypeIcon, getColorStyles } from "@/components/dashboard/dashboard-utils";
 import type { ItemWithType } from "@/lib/queries/items";
 import { useItemDrawer } from "@/components/item-drawer/useItemDrawer";
+import Link from "next/link";
 
 export interface ItemCardProps {
   item: ItemWithType;
@@ -49,12 +50,14 @@ export function ItemCard({ item }: ItemCardProps) {
         {item.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {item.tags.slice(0, 3).map((tag) => (
-              <span
+              <Link
                 key={tag}
-                className="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground"
+                href={`/dashboard/tags/${tag}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors no-underline"
               >
                 {tag}
-              </span>
+              </Link>
             ))}
           </div>
         )}

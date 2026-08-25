@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useItemDrawer } from "@/components/item-drawer/useItemDrawer";
 import type { ItemWithType } from "@/lib/queries/items";
 import { formatFileSize } from "@/lib/utils";
+import Link from "next/link";
 
 interface FileListItemProps {
   item: ItemWithType;
@@ -47,6 +48,21 @@ export function FileListItem({ item }: FileListItemProps) {
             {item.fileSize && <span>• {formatFileSize(item.fileSize)}</span>}
             <span>• {formattedDate}</span>
           </div>
+          {/* Tags */}
+          {item.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {item.tags.slice(0, 3).map((tag) => (
+              <Link
+                  key={tag}
+                  href={`/dashboard/tags/${tag}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors no-underline"
+                >
+                  {tag}
+              </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <Button
