@@ -9,6 +9,7 @@ export interface SessionUser {
   image?: string | null;
   createdAt: Date;
   hasPassword: boolean;
+  isAdmin: boolean;
   editorPreferences: {
     fontSize?: number;
     tabSize?: number;
@@ -44,6 +45,7 @@ export async function getCurrentUser(userId: string): Promise<SessionUser> {
       image: true,
       createdAt: true,
       password: true,
+      isAdmin: true,
       editorPreferences: true,
     },
   });
@@ -56,6 +58,7 @@ export async function getCurrentUser(userId: string): Promise<SessionUser> {
       image: user.image,
       createdAt: user.createdAt,
       hasPassword: !!user.password,
+      isAdmin: user.isAdmin,
       editorPreferences: user.editorPreferences as SessionUser['editorPreferences'],
     };
   }
@@ -69,6 +72,7 @@ export async function getCurrentUser(userId: string): Promise<SessionUser> {
       image: session.user.image ?? null,
       createdAt: new Date(), // fallback, but shouldn't happen
       hasPassword: false,
+      isAdmin: session.user.isAdmin ?? false,
       editorPreferences: null,
     };
   }

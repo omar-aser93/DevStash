@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LogOut, User, Settings, ChevronsUpDown, Star } from "lucide-react";
+import { LogOut, User, Settings, ChevronsUpDown, Star, Shield } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -101,6 +101,12 @@ export function UserNavMenu({ user, collapsed }: UserNavMenuProps) {
               <Settings className="size-4 shrink-0 text-muted-foreground" />
               <span>Settings</span>
             </DropdownMenuItem>
+            {user.isAdmin && (
+              <DropdownMenuItem render={<Link href="/admin" className="flex w-full items-center gap-2" />}>
+                <Shield className="size-4 shrink-0 text-muted-foreground" />
+                <span>Admin</span>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem

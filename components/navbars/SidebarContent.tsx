@@ -14,7 +14,8 @@ import Link from "next/link";
 export interface SidebarUser {
   name: string;
   email: string;
-  image?: string | null;
+  image?: string | null;  
+  isAdmin: boolean;
 }
 
 export interface SidebarContentProps {

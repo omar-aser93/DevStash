@@ -5,7 +5,15 @@ import Link from "next/link";
 import { FolderOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function HomeNavbar() {
+interface HomeNavbarProps {
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  } | null;
+}
+
+export default function HomeNavbar({ user }: HomeNavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -39,12 +47,20 @@ export default function HomeNavbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="outline"className="border-[#1e1e2e] text-[#8888a4] hover:text-[#e4e4ef] hover:border-[#8888a4] bg-transparent">
-            <Link href="/sign-in">Sign In</Link>
-          </Button>
-          <Button className="bg-linear-to-r from-blue-700 via-blue-600 to-blue-400 text-white border-0 hover:opacity-90">
-            <Link href="/register">Get Started</Link>
-          </Button>
+        {user ? (
+            <Button className="bg-linear-to-r from-blue-700 via-blue-600 to-blue-400 text-white border-0 hover:opacity-90">
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="outline" className="border-[#1e1e2e] text-[#8888a4] hover:text-[#e4e4ef] hover:border-[#8888a4] bg-transparent">
+                <Link href="/sign-in">Sign In</Link>
+              </Button>
+              <Button className="bg-linear-to-r from-blue-700 via-blue-600 to-blue-400 text-white border-0 hover:opacity-90">
+                <Link href="/register">Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         <button
@@ -72,12 +88,20 @@ export default function HomeNavbar() {
           >
             Pricing
           </Link>
-          <Button variant="outline" className="border-[#1e1e2e] text-[#8888a4] hover:text-[#e4e4ef] bg-transparent mt-1 justify-center">
-            <Link href="/sign-in" onClick={() => setMobileOpen(false)}>Sign In</Link>
-          </Button>
-          <Button className="bg-linear-to-r from-blue-700 via-blue-600 to-blue-400 text-white border-0 justify-center">
-            <Link href="/register" onClick={() => setMobileOpen(false)}>Get Started</Link>
-          </Button>
+          {user ? (
+            <Button className="bg-linear-to-r from-blue-700 via-blue-600 to-blue-400 text-white border-0 justify-center">
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="outline" className="border-[#1e1e2e] text-[#8888a4] hover:text-[#e4e4ef] bg-transparent mt-1 justify-center">
+                <Link href="/sign-in" onClick={() => setMobileOpen(false)}>Sign In</Link>
+              </Button>
+              <Button className="bg-linear-to-r from-blue-700 via-blue-600 to-blue-400 text-white border-0 justify-center">
+                <Link href="/register" onClick={() => setMobileOpen(false)}>Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
       )}
     </nav>

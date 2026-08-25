@@ -59,9 +59,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return token;
     },
-    session({ session, token }) {
+    async session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        // Fetch isAdmin from DB
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { isAdmin: true },
+        });
+        session.user.isAdmin = dbUser?.isAdmin ?? false;
       }
 
       return session;

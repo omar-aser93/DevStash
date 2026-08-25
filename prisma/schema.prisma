@@ -20,6 +20,7 @@ model User {
   image                String?
   password             String?
   isPro                Boolean   @default(false)
+  isAdmin              Boolean @default(false)
   stripeCustomerId     String?   @unique
   stripeSubscriptionId String?   @unique
   editorPreferences    Json?     // User's Monaco editor preferences
@@ -33,6 +34,7 @@ model User {
   tags        Tag[]
   accounts    Account[]
   sessions    Session[]
+  blogPosts   BlogPost[]
 
   @@map("users")
 }
@@ -201,4 +203,25 @@ model Tag {
   @@unique([userId, name])
   @@index([userId])
   @@map("tags")
+}
+
+
+// ============================================
+// BLOG POST
+// ============================================
+model BlogPost {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String   @db.Text
+  excerpt   String?  @db.Text
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([published])
+  @@map("blog_posts")
 }
