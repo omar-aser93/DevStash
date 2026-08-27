@@ -44,24 +44,24 @@ describe('Stripe Usage Limit Utilities', () => {
       expect(prisma.collection.count).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     });
 
-    it('sets canCreateItem: false at exactly 50 items for free users', async () => {
-      vi.mocked(prisma.item.count).mockResolvedValue(50);
-      vi.mocked(prisma.collection.count).mockResolvedValue(2);
+    it('sets canCreateItem: false at exactly MAX_ITEMS for free users', async () => {
+      vi.mocked(prisma.item.count).mockResolvedValue(MAX_ITEMS);
+      vi.mocked(prisma.collection.count).mockResolvedValue(1);
 
       const usage = await getUserUsage('user-1', false);
 
-      expect(usage.itemCount).toBe(50);
+      expect(usage.itemCount).toBe(MAX_ITEMS);
       expect(usage.canCreateItem).toBe(false);
       expect(usage.canCreateCollection).toBe(true);
     });
 
-    it('sets canCreateCollection: false at exactly 3 collections for free users', async () => {
+    it('sets canCreateCollection: false at exactly MAX_COLLECTIONS for free users', async () => {
       vi.mocked(prisma.item.count).mockResolvedValue(20);
-      vi.mocked(prisma.collection.count).mockResolvedValue(3);
+      vi.mocked(prisma.collection.count).mockResolvedValue(MAX_COLLECTIONS);
 
       const usage = await getUserUsage('user-1', false);
 
-      expect(usage.collectionCount).toBe(3);
+      expect(usage.collectionCount).toBe(MAX_COLLECTIONS);
       expect(usage.canCreateCollection).toBe(false);
       expect(usage.canCreateItem).toBe(true);
     });
@@ -82,7 +82,7 @@ describe('Stripe Usage Limit Utilities', () => {
 
   describe('canCreateItem', () => {
     it('returns true when free user is under limit', async () => {
-      vi.mocked(prisma.item.count).mockResolvedValue(49);
+      vi.mocked(prisma.item.count).mockResolvedValue(MAX_ITEMS - 1);
 
       const result = await canCreateItem('user-1', false);
 
@@ -90,8 +90,8 @@ describe('Stripe Usage Limit Utilities', () => {
       expect(prisma.item.count).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     });
 
-    it('returns false when free user is at limit (50 items)', async () => {
-      vi.mocked(prisma.item.count).mockResolvedValue(50);
+    it('returns false when free user is at limit', async () => {
+      vi.mocked(prisma.item.count).mockResolvedValue(MAX_ITEMS);
 
       const result = await canCreateItem('user-1', false);
 
@@ -99,8 +99,8 @@ describe('Stripe Usage Limit Utilities', () => {
       expect(prisma.item.count).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     });
 
-    it('returns false when free user is above limit (>50 items)', async () => {
-      vi.mocked(prisma.item.count).mockResolvedValue(55);
+    it('returns false when free user is above limit', async () => {
+      vi.mocked(prisma.item.count).mockResolvedValue(MAX_ITEMS + 5);
 
       const result = await canCreateItem('user-1', false);
 
@@ -117,7 +117,7 @@ describe('Stripe Usage Limit Utilities', () => {
 
   describe('canCreateCollection', () => {
     it('returns true when free user is under limit', async () => {
-      vi.mocked(prisma.collection.count).mockResolvedValue(2);
+      vi.mocked(prisma.collection.count).mockResolvedValue(MAX_COLLECTIONS - 1);
 
       const result = await canCreateCollection('user-1', false);
 
@@ -125,8 +125,8 @@ describe('Stripe Usage Limit Utilities', () => {
       expect(prisma.collection.count).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     });
 
-    it('returns false when free user is at limit (3 collections)', async () => {
-      vi.mocked(prisma.collection.count).mockResolvedValue(3);
+    it('returns false when free user is at limit', async () => {
+      vi.mocked(prisma.collection.count).mockResolvedValue(MAX_COLLECTIONS);
 
       const result = await canCreateCollection('user-1', false);
 
@@ -134,8 +134,8 @@ describe('Stripe Usage Limit Utilities', () => {
       expect(prisma.collection.count).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     });
 
-    it('returns false when free user is above limit (>3 collections)', async () => {
-      vi.mocked(prisma.collection.count).mockResolvedValue(5);
+    it('returns false when free user is above limit', async () => {
+      vi.mocked(prisma.collection.count).mockResolvedValue(MAX_COLLECTIONS + 2);
 
       const result = await canCreateCollection('user-1', false);
 

@@ -42,7 +42,8 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 ### 3. Create `lib/stripe/usage.ts`
 
-Free tier limits and utility functions for checking user usage.
+Free tier limits and utility functions for checking user usage... create 
+MAX_ITEMS , MAX_COLLECTIONS in `.env` if possible, or remind me to create them manually.
 
 | Constant | Value |
 |----------|-------|

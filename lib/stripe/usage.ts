@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { getEnvNumber } from '@/lib/utils';
 
+// we set these in .env & used getEnvNumber() from lib/utils to convert to number
 export const MAX_ITEMS = getEnvNumber("MAX_ITEMS", 50);
 export const MAX_COLLECTIONS = getEnvNumber("MAX_COLLECTIONS", 5);
 
