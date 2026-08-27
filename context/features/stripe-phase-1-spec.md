@@ -47,7 +47,7 @@ Free tier limits and utility functions for checking user usage.
 | Constant | Value |
 |----------|-------|
 | `MAX_ITEMS` | 50 |
-| `MAX_COLLECTIONS` | 3 |
+| `MAX_COLLECTIONS` | 5 |
 
 Functions:
 - `getUserUsage(userId, isPro)` - Returns item/collection counts and whether user can create more

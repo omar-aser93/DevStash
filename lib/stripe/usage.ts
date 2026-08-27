@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma';
+import { getEnvNumber } from '@/lib/utils';
 
-export const MAX_ITEMS = 50;
-export const MAX_COLLECTIONS = 3;
+export const MAX_ITEMS = getEnvNumber("MAX_ITEMS", 50);
+export const MAX_COLLECTIONS = getEnvNumber("MAX_COLLECTIONS", 5);
 
 export interface UserUsage {
   itemCount: number;
