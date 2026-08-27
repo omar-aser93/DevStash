@@ -5,6 +5,16 @@ declare module 'next-auth' {
     user: {
       id: string;
       isAdmin: boolean;
+      isPro: boolean;
     } & DefaultSession['user'];
   }
 }
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id?: string;
+    isAdmin?: boolean;
+    isPro?: boolean;
+  }
+}
+

@@ -8,7 +8,7 @@ argument-hint: <prompt-name>
 
 Execute research task: argument
 
-- The **argument** is the first word after /research ..
+- The **argument** is the first word after /research 
 
 ---
 
