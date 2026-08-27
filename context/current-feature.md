@@ -1,29 +1,16 @@
-# Current Feature: Stripe Integration - Phase 2: Webhooks, Feature Gating & UI
+# Current Feature
 
 ## Status
 
-In Progress
+-
 
 ## Goals
 
-- Create Stripe webhook route at `app/api/webhooks/stripe/route.ts` handling `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`, and `customer.subscription.deleted`
-- Add feature gating (pro type check for file/image) and usage limit check (`canCreateItem`) to `lib/actions/itemsActions.ts`
-- Add usage limit check (`canCreateCollection`) to `lib/actions/collectionsActions.ts`
-- Add Pro subscription authorization check in `app/api/upload/route.ts`
-- Create `components/settings/billing-settings.tsx` UI component displaying plan badge, usage meters, upgrade options, and billing portal management
-- Integrate `BillingSettings` into `app/dashboard/settings/page.tsx` with server-side `getUserUsage` data fetching
-- Implement upgrade success toast and search param cleanup for `/dashboard/settings?upgraded=true`
-- Verify with `npm test`, `npm run lint`, and `npm run build`
+-
 
 ## Notes
 
-- Spec file: `context/features/stripe-phase-2-spec.md`
-- Webhook route receives raw payload via `request.text()` and verifies signature with `stripe.webhooks.constructEvent()` using `STRIPE_WEBHOOK_SECRET`
-- `checkout.session.completed` associates user via `metadata.userId`
-- Recurring subscription and invoice events match via `stripeCustomerId` using `updateMany` for idempotency
-- Subscription statuses: `active` or `trialing` set `isPro: true`; `deleted` or other statuses set `isPro: false`
-- Payment failures log a warning without immediately downgrading (allowing Stripe automatic retries)
-- Upgrade/portal redirect URLs target `/dashboard/settings` (and `/dashboard/settings?upgraded=true`)
+-
 
 ## History
 
@@ -41,3 +28,4 @@ In Progress
 - completed Auth (Phase 3): added custom sign-in, sign-out pages . and user avatar & updated session logic.
 - completed items & collections CRUD, And homepage UI .
 - Completed Stripe Integration Phase 1: initialized Stripe Node SDK, created usage limit utilities with Vitest unit tests, updated NextAuth Session and JWT types and auth callbacks for dynamic `isPro` synchronization, and implemented Stripe Checkout and Customer Billing Portal API routes. Verified with `npm test`, `npm run lint`, and `npm run build`.
+- Completed Stripe Integration Phase 2: implemented Stripe webhook handler for checkout and subscription lifecycle events, added feature gating and free-tier limits to createItem, createCollection, and upload routes, built BillingSettings UI component with usage progress meters and Stripe Customer Portal integration, and added upgrade success toast. Verified with 18 Vitest unit tests, ESLint, and Next.js production build.
