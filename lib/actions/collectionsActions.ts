@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createCollectionSchema, updateCollectionSchema } from "@/lib/validators";
+import { canCreateCollection } from "@/lib/stripe/usage";
 
 
 export async function createCollection(data: unknown) {
@@ -19,6 +20,15 @@ export async function createCollection(data: unknown) {
 
   const { name, description, defaultTypeId } = result.data;
   const userId = session.user.id;
+  const isPro = session.user.isPro ?? false;
+
+  const allowed = await canCreateCollection(userId, isPro);
+  if (!allowed) {
+    return {
+      success: false,
+      error: "You have reached the free tier limit of 3 collections. Upgrade to Pro for unlimited collections.",
+    };
+  }
 
   try {
     const collection = await prisma.collection.create({

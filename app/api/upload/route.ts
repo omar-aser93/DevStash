@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/session";
 import { uploadFileToR2 } from "@/lib/r2";
+import { prisma } from "@/lib/prisma";
 import { randomUUID } from "crypto";
 
 // Define constraints
@@ -34,6 +35,18 @@ export async function POST(request: Request) {
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isPro: true },
+  });
+
+  if (!user?.isPro) {
+    return NextResponse.json(
+      { error: "File uploads require a Pro subscription" },
+      { status: 403 }
+    );
   }
 
   const formData = await request.formData();

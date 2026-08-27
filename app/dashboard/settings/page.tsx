@@ -3,6 +3,8 @@ import { getCurrentUser, getCurrentUserId } from "@/lib/session";
 import { ChangePassword } from "@/components/settings/ChangePassword";
 import { DeleteAccount } from "@/components/settings/DeleteAccount";
 import { EditorPreferences } from "@/components/settings/EditorPreferences";
+import { BillingSettings } from "@/components/settings/BillingSettings";
+import { getUserUsage } from "@/lib/stripe/usage";
 
 export const metadata: Metadata = {
   title: "Settings | DevStash",
@@ -12,6 +14,7 @@ export const metadata: Metadata = {
 export default async function SettingsPage() {
   const userId = await getCurrentUserId();
   const user = await getCurrentUser(userId);
+  const usage = await getUserUsage(user.id, user.isPro);
 
   return (
     <div className="flex-1 overflow-y-auto bg-background/50 p-6 space-y-8">
@@ -41,6 +44,13 @@ export default async function SettingsPage() {
         </p>
         <EditorPreferences />
       </section>
+
+      {/* Billing & Subscription */}
+      <BillingSettings
+        isPro={user.isPro}
+        itemCount={usage.itemCount}
+        collectionCount={usage.collectionCount}
+      />
 
       {/* Delete Account */}
       <section className="rounded-xl border border-destructive/30 bg-card/40 p-6 space-y-4">

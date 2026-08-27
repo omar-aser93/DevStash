@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     process.env.NEXTAUTH_URL ||
     'http://localhost:3000';
 
-  const returnUrl = `${origin}/settings`;
+  const returnUrl = `${origin}/dashboard/settings`;
 
   try {
     const portalSession = await stripe.billingPortal.sessions.create({

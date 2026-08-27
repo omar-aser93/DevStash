@@ -10,7 +10,7 @@ Wire up Stripe webhook handler to sync subscription status, add feature gating t
 - Stripe CLI installed (`brew install stripe/stripe-cli/stripe`)
 - Stripe CLI authenticated (`stripe login`)
 - Webhook forwarding active: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
-- Copy webhook signing secret from CLI output to `STRIPE_WEBHOOK_SECRET`
+- Copy webhook signing secret from CLI output to `STRIPE_WEBHOOK_SECRET` in `.env`
 
 ## Requirements
 
@@ -23,7 +23,7 @@ Wire up Stripe webhook handler to sync subscription status, add feature gating t
 
 ## Implementation
 
-### 1. Create `src/app/api/webhooks/stripe/route.ts`
+### 1. Create `app/api/webhooks/stripe/route.ts`
 
 POST endpoint that:
 1. Reads raw body with `request.text()` (App Router provides raw body by default)
@@ -47,22 +47,22 @@ Key details:
 - All other handlers use `stripeCustomerId` with `updateMany` for idempotency
 - Customer/subscription fields may be string or object - handle both with typeof checks
 
-### 2. Modify `src/actions/items.ts` - `createItem`
+### 2. Modify `lib/actions/itemsActions.ts` - `createItem`
 
 Add two checks before existing creation logic:
 1. **Pro type check:** If `input.typeName` is `file` or `image` and user is not Pro, return error: "File and image uploads require a Pro subscription"
 2. **Usage limit check:** Call `canCreateItem(userId, isPro)` and return error if false: "You have reached the free tier limit of 50 items. Upgrade to Pro for unlimited items."
 
-Import `canCreateItem` from `@/lib/usage`.
+Import `canCreateItem` from `@/lib/stripe/usage`.
 
-### 3. Modify `src/actions/collections.ts` - `createCollection`
+### 3. Modify `lib/actions/collectionsActions.ts` - `createCollection`
 
 Add usage limit check before existing creation logic:
 - Call `canCreateCollection(userId, isPro)` and return error if false: "You have reached the free tier limit of 3 collections. Upgrade to Pro for unlimited collections."
 
-Import `canCreateCollection` from `@/lib/usage`.
+Import `canCreateCollection` from `@/lib/stripe/usage`.
 
-### 4. Modify `src/app/api/upload/route.ts`
+### 4. Modify `app/api/upload/route.ts`
 
 Add Pro check after auth check. Since the upload API route may not have the JWT-enhanced session, query `isPro` directly from the database:
 
@@ -80,7 +80,7 @@ if (!user?.isPro) {
 }
 ```
 
-### 5. Create `src/components/settings/billing-settings.tsx`
+### 5. Create `components/settings/billing-settings.tsx`
 
 Client component (`'use client'`) that displays:
 
@@ -101,7 +101,7 @@ Client component (`'use client'`) that displays:
 - All buttons disabled during any loading state
 - Error handling with `toast.error()`
 
-### 6. Modify `src/app/settings/page.tsx`
+### 6. Modify `app/dashboard/settings/page.tsx`
 
 - Import `BillingSettings` and `getUserUsage`
 - Fetch usage data: `const usage = await getUserUsage(user.id, session.user.isPro ?? false)`
@@ -110,7 +110,7 @@ Client component (`'use client'`) that displays:
 
 ### 7. Upgrade Success Toast
 
-After successful checkout, users redirect to `/settings?upgraded=true`. Handle this in BillingSettings or a wrapper:
+After successful checkout, users redirect to `/dashboard/settings?upgraded=true`. Handle this in BillingSettings or a wrapper:
 
 - Read `upgraded` param with `useSearchParams()`
 - On mount, if `upgraded === 'true'`, show `toast.success('Welcome to DevStash Pro!')`
@@ -120,17 +120,17 @@ After successful checkout, users redirect to `/settings?upgraded=true`. Handle t
 
 | File | Purpose |
 |------|---------|
-| `src/app/api/webhooks/stripe/route.ts` | Handle Stripe webhook events |
-| `src/components/settings/billing-settings.tsx` | Billing UI on settings page |
+| `app/api/webhooks/stripe/route.ts` | Handle Stripe webhook events |
+| `components/settings/billing-settings.tsx` | Billing UI on settings page |
 
 ## Modified Files
 
 | File | Changes |
 |------|---------|
-| `src/actions/items.ts` | Add Pro type check + usage limit check in `createItem` |
-| `src/actions/collections.ts` | Add usage limit check in `createCollection` |
-| `src/app/api/upload/route.ts` | Add Pro check before file upload |
-| `src/app/settings/page.tsx` | Add BillingSettings section with usage data |
+| `lib/actions/itemsActions.ts` | Add Pro type check + usage limit check in `createItem` |
+| `lib/actions/collectionsActions.ts` | Add usage limit check in `createCollection` |
+| `app/api/upload/route.ts` | Add Pro check before file upload |
+| `app/dashboard/settings/page.tsx` | Add BillingSettings section with usage data |
 
 ## Testing
 
@@ -155,7 +155,7 @@ stripe trigger customer.subscription.deleted
 - [ ] **Webhook - checkout.session.completed:** User gets `isPro: true`, `stripeCustomerId` and `stripeSubscriptionId` saved
 - [ ] **Webhook - invoice.paid:** User stays `isPro: true`
 - [ ] **Webhook - customer.subscription.deleted:** User set to `isPro: false`, `stripeSubscriptionId` cleared
-- [ ] **Customer Portal:** Pro user clicks "Manage Billing", redirects to Stripe portal, returns to `/settings`
+- [ ] **Customer Portal:** Pro user clicks "Manage Billing", redirects to Stripe portal, returns to `/dashboard/settings`
 - [ ] **Feature Gating - Items:** Free user blocked at 50 items with upgrade message
 - [ ] **Feature Gating - Collections:** Free user blocked at 3 collections with upgrade message
 - [ ] **Feature Gating - File/Image:** Free user cannot create file/image items (error message)

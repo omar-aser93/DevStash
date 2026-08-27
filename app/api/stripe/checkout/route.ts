@@ -72,7 +72,7 @@ export async function POST(request: Request) {
 
     const origin =
       request.headers.get('origin') ||
-      process.env.NEXTAUTH_URL ||
+      process.env.AUTH_URL ||
       'http://localhost:3000';
 
     const checkoutSession = await stripe.checkout.sessions.create({
@@ -85,8 +85,8 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/settings?upgraded=true`,
-      cancel_url: `${origin}/settings`,
+      success_url: `${origin}/dashboard/settings?upgraded=true`,
+      cancel_url: `${origin}/dashboard/settings`,
       metadata: {
         userId: user.id,
       },

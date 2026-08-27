@@ -93,7 +93,7 @@ POST endpoint that:
 5. Creates Stripe Checkout Session with `mode: 'subscription'`
 6. Sets `metadata.userId` on checkout session for webhook processing
 7. Returns `{ url }` for client redirect
-8. Success URL: `/settings?upgraded=true`, Cancel URL: `/settings`
+8. Success URL: `/dashboard/settings?upgraded=true`, Cancel URL: `/settings`
 
 ### 8. Create `app/api/stripe/portal/route.ts`
 

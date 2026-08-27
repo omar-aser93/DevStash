@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { createItemSchema, updateItemSchema } from "@/lib/validators";
 import { Prisma } from "@/prisma/generated/prisma/client";
 import { deleteFileFromR2 } from "@/lib/r2";
+import { canCreateItem } from "@/lib/stripe/usage";
 
 
 // Helper to resolve item type from name (system or user-owned)
@@ -33,6 +34,22 @@ export async function createItem(data: unknown) {
 
   const { typeName, title, description, tags, content, url, language, fileUrl, fileName, fileSize, fileKey, collectionIds } = result.data;
   const userId = session.user.id;
+  const isPro = session.user.isPro ?? false;
+
+  // 1. Pro type check
+  const normalizedType = typeName.toLowerCase();
+  if ((normalizedType === "file" || normalizedType === "image") && !isPro) {
+    return { success: false, error: "File and image uploads require a Pro subscription" };
+  }
+
+  // 2. Usage limit check
+  const allowed = await canCreateItem(userId, isPro);
+  if (!allowed) {
+    return {
+      success: false,
+      error: "You have reached the free tier limit of 50 items. Upgrade to Pro for unlimited items.",
+    };
+  }
 
   try {
     // 1. Resolve item type
