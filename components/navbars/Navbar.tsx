@@ -75,9 +75,9 @@ export function Navbar({ collections, isPro, ...sidebarProps }: NavbarProps) {
             variant="ghost"
             className="size-8 sm:w-auto sm:px-2.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 text-xs sm:text-sm"
           >              
-            <Link href="/dashboard/upgrade" className="hidden sm:inline">
+            <Link href="/dashboard/upgrade">
               <CircleFadingArrowUp aria-hidden="true" className="inline sm:hidden"/>
-              Upgrade
+              <span className="hidden sm:inline">Upgrade</span>
             </Link>
          </Button>
         )}
