@@ -74,9 +74,11 @@ export function Navbar({ collections, isPro, ...sidebarProps }: NavbarProps) {
             aria-label="Upgrade to Pro"
             variant="ghost"
             className="size-8 sm:w-auto sm:px-2.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 text-xs sm:text-sm"
-          >            
-            <CircleFadingArrowUp aria-hidden="true" className="inline sm:hidden"/>
-            <Link href="/dashboard/upgrade" className="hidden sm:inline">Upgrade</Link>
+          >              
+            <Link href="/dashboard/upgrade" className="hidden sm:inline">
+              <CircleFadingArrowUp aria-hidden="true" className="inline sm:hidden"/>
+              Upgrade
+            </Link>
          </Button>
         )}
         <Button
