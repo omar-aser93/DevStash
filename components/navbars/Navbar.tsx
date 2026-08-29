@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FolderOpen, FolderPlus, Plus, Search } from "lucide-react";
+import { CircleFadingArrowUp, FolderOpen, FolderPlus, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarMobile } from "./SidebarMobile";
 import { CreateItemDialog } from "@/components/CreateItemDialog";
@@ -12,11 +12,11 @@ import Link from "next/link";
 
 
 interface NavbarProps extends Omit<SidebarContentProps, "collapsed" | "setCollapsed" | "mobile"> {
-  collections: { id: string; name: string }[];
+  collections: { id: string; name: string }[]; isPro: boolean;
 }
 
 
-export function Navbar({ collections, ...sidebarProps }: NavbarProps) {
+export function Navbar({ collections, isPro, ...sidebarProps }: NavbarProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const { setOpen: setSearchOpen } = useSearch();
@@ -28,7 +28,8 @@ export function Navbar({ collections, ...sidebarProps }: NavbarProps) {
         <SidebarMobile {...sidebarProps}/>
         <Link href="/" className="flex items-center gap-2.5 font-bold text-sm sm:text-lg text-[#e4e4ef]">
           <FolderOpen className="size-5 sm:size-7" />
-          DevStash
+          <span className="hidden sm:inline">DevStash</span>
+          <span className="inline sm:hidden"> {isPro ? "DevStash" : "DS" }</span>
         </Link>
       </div>
 
@@ -68,6 +69,16 @@ export function Navbar({ collections, ...sidebarProps }: NavbarProps) {
         >
           <Search className="size-5" />
         </Button>
+        {!isPro && (
+          <Button
+            aria-label="Upgrade to Pro"
+            variant="ghost"
+            className="size-8 sm:w-auto sm:px-2.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 text-xs sm:text-sm"
+          >            
+            <CircleFadingArrowUp aria-hidden="true" className="inline sm:hidden"/>
+            <Link href="/dashboard/upgrade" className="hidden sm:inline">Upgrade</Link>
+         </Button>
+        )}
         <Button
           aria-label="New collection"
           className="size-8 sm:w-auto sm:px-2.5"
@@ -87,7 +98,7 @@ export function Navbar({ collections, ...sidebarProps }: NavbarProps) {
         </Button>
       </div>
 
-      <CreateItemDialog open={createOpen} onOpenChange={setCreateOpen} collections={collections}/>
+      <CreateItemDialog open={createOpen} onOpenChange={setCreateOpen} collections={collections} isPro={isPro}/>
       <CollectionFormDialog open={collectionOpen} onOpenChange={setCollectionOpen} />
     </header>
   );

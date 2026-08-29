@@ -5,6 +5,7 @@ import { DeleteAccount } from "@/components/settings/DeleteAccount";
 import { EditorPreferences } from "@/components/settings/EditorPreferences";
 import { BillingSettings } from "@/components/settings/BillingSettings";
 import { getUserUsage } from "@/lib/stripe/usage";
+import { MAX_ITEMS, MAX_COLLECTIONS } from "@/lib/stripe/usage";
 
 export const metadata: Metadata = {
   title: "Settings | DevStash",
@@ -33,24 +34,27 @@ export default async function SettingsPage() {
             Update your password to keep your account secure.
           </p>
           <ChangePassword />
+          <span id="billing"></span>
         </section>
       )}
+           
+      {/* Billing & Subscription */}
+      <BillingSettings
+        isPro={user.isPro}
+        itemCount={usage.itemCount}
+        collectionCount={usage.collectionCount}
+        maxItems={MAX_ITEMS}
+        maxCollections={MAX_COLLECTIONS}
+      />
 
       {/* Editor Preferences */}
-      <section className="rounded-xl border bg-card/40 p-6 space-y-4">
+      <section className="rounded-xl border bg-card/40 p-6 space-y-4 ">
         <h2 className="text-lg font-semibold">Editor Preferences</h2>
         <p className="text-sm text-muted-foreground">
           These settings apply to the Monaco code editor across the app.
         </p>
         <EditorPreferences />
       </section>
-
-      {/* Billing & Subscription */}
-      <BillingSettings
-        isPro={user.isPro}
-        itemCount={usage.itemCount}
-        collectionCount={usage.collectionCount}
-      />
 
       {/* Delete Account */}
       <section className="rounded-xl border border-destructive/30 bg-card/40 p-6 space-y-4">

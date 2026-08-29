@@ -20,18 +20,12 @@ export default async function ItemsByTypePage({ params, searchParams }: PageProp
   const { type } = await params;
   const { page: pageParam } = await searchParams;
   const userId = await getCurrentUserId();
-
-  const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
-  const limit = 20; // ITEMS_PER_PAGE
-
-  const { items, type: itemType, total, totalPages } = await getItemsByType(
-    userId,
-    type,
-    page,
-    limit
-  );
-
+  
   const typeName = type.toLowerCase();
+  const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+  const limit = 20;
+
+  const { items, type: itemType, total, totalPages } = await getItemsByType( userId, type, page, limit );
 
   const renderItems = () => {
     if (items.length === 0) {

@@ -11,6 +11,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --radius-lg: var(--radius);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground)
 }
 
 :root {
@@ -24,6 +26,8 @@
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
+  --destructive: oklch(0.577 0.245 27.325); /* a typical red */
+  --destructive-foreground: oklch(0.985 0 0);
 }
 
 * {

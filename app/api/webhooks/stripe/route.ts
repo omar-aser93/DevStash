@@ -132,6 +132,7 @@ export async function POST(request: Request) {
         handlePaymentFailed(event.data.object as Stripe.Invoice);
         break;
 
+      case 'customer.subscription.created':
       case 'customer.subscription.updated':
         await handleSubscriptionUpdated(
           event.data.object as Stripe.Subscription

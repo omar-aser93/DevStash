@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/stripe';
 
+
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id || !session?.user?.email) {
@@ -51,9 +52,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
+
   try {
     let customerId = user.stripeCustomerId;
 
+    // Verify existing Stripe customer
+    if (customerId) {
+      try {
+        const customer = await stripe.customers.retrieve(customerId);
+
+        // Customer exists but was deleted
+        if (customer.deleted) {
+          customerId = null;
+        }
+      } catch (err: unknown) {
+        if (
+          typeof err === 'object' &&
+          err !== null &&
+          'code' in err &&
+          err.code === 'resource_missing'
+        ) {
+          console.warn(
+            `Stripe customer ${customerId} does not exist. Creating a new customer.`
+          );
+
+          customerId = null;
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    // Create a new Stripe customer if needed
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -62,11 +92,14 @@ export async function POST(request: Request) {
           userId: user.id,
         },
       });
+
       customerId = customer.id;
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { stripeCustomerId: customerId },
+        data: {
+          stripeCustomerId: customerId,
+        },
       });
     }
 
@@ -107,6 +140,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
     console.error('Error creating Stripe checkout session:', error);
+
     return NextResponse.json(
       { error: 'Failed to initiate checkout session' },
       { status: 500 }

@@ -7,7 +7,7 @@ Wire up Stripe webhook handler to sync subscription status, add feature gating t
 ## Prerequisites
 
 - Phase 1 complete (Stripe SDK, usage utilities, session `isPro`, checkout/portal API routes)
-- Stripe CLI installed (`brew install stripe/stripe-cli/stripe`)
+- Stripe CLI installed (`npm install --global @stripe/cli`)
 - Stripe CLI authenticated (`stripe login`)
 - Webhook forwarding active: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
 - Copy webhook signing secret from CLI output to `STRIPE_WEBHOOK_SECRET` in `.env`

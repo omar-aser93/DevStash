@@ -5,6 +5,7 @@ export const proxy = auth((req) => {
   const { nextUrl } = req;
   const isAuthenticated = !!req.auth;
   const isAdmin = req.auth?.user?.isAdmin ?? false;
+  const isPro = req.auth?.user?.isPro ?? false;
   const pathname = nextUrl.pathname;
 
   // Protect /admin/* – require auth and admin
@@ -24,6 +25,20 @@ export const proxy = auth((req) => {
     const signInUrl = new URL('/sign-in', nextUrl);
     signInUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(signInUrl);
+  }
+
+  // --- Upgrade page: redirect Pro users to settings ---
+  if (pathname === '/dashboard/upgrade' && isPro) {
+    return NextResponse.redirect(new URL('/dashboard/settings#billing', nextUrl));
+  }
+
+  // --- Items by type: restrict file/image for free users ---
+  const itemsMatch = pathname.match(/^\/dashboard\/items\/([^/]+)$/);
+  if (itemsMatch) {
+    const type = itemsMatch[1].toLowerCase();
+    if ((type === 'file' || type === 'image') && !isPro && isAuthenticated) {
+      return NextResponse.redirect(new URL('/dashboard/upgrade', nextUrl));
+    }
   }
 
   // If already logged in and trying to access sign-in or register → redirect to dashboard

@@ -20,9 +20,10 @@ interface CreateItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   collections: { id: string; name: string }[];
+  isPro: boolean;
 }
 
-export function CreateItemDialog({ open, onOpenChange, collections }: CreateItemDialogProps) {
+export function CreateItemDialog({ open, onOpenChange, collections, isPro, }: CreateItemDialogProps) {
   const router = useRouter();           // navigation hook
   // form states
   const [type, setType] = useState<ItemTypeName>("snippet");
@@ -107,8 +108,8 @@ export function CreateItemDialog({ open, onOpenChange, collections }: CreateItem
                 <SelectItem value="command">Command</SelectItem>
                 <SelectItem value="note">Note</SelectItem>
                 <SelectItem value="link">Link</SelectItem>
-                <SelectItem value="file">File</SelectItem>
-                <SelectItem value="image">Image</SelectItem>
+                <SelectItem value="file" disabled={!isPro}> File {!isPro && "🔒 (Pro)"} </SelectItem>
+                <SelectItem value="image" disabled={!isPro}> Image {!isPro && "🔒 (Pro)"} </SelectItem>
               </SelectContent>
             </Select>
           </div>

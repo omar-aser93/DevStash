@@ -11,12 +11,17 @@ interface BillingSettingsProps {
   isPro: boolean;
   itemCount: number;
   collectionCount: number;
+  maxItems: number;
+  maxCollections: number;
 }
+
 
 export function BillingSettings({
   isPro,
   itemCount,
   collectionCount,
+  maxItems,
+  maxCollections,
 }: BillingSettingsProps) {
   const searchParams = useSearchParams();
   const [loadingAction, setLoadingAction] = useState<
@@ -82,11 +87,8 @@ export function BillingSettings({
     }
   };
 
-  const itemPercentage = Math.min(Math.round((itemCount / 50) * 100), 100);
-  const collectionPercentage = Math.min(
-    Math.round((collectionCount / 3) * 100),
-    100
-  );
+  const itemPercentage = Math.min(Math.round((itemCount / maxItems ) * 100), 100);
+  const collectionPercentage = Math.min( Math.round((collectionCount / maxCollections) * 100), 100 );
 
   return (
     <section className="rounded-xl border bg-card/40 p-6 space-y-6">
@@ -166,13 +168,13 @@ export function BillingSettings({
                 <div className="flex justify-between text-xs font-medium">
                   <span>Items</span>
                   <span>
-                    {itemCount} / 50 items
+                    {itemCount} / {maxItems} items
                   </span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                   <div
                     className={`h-full transition-all duration-300 ${
-                      itemCount >= 50 ? "bg-destructive" : "bg-primary"
+                      itemCount >= maxItems ? "bg-destructive" : "bg-primary"
                     }`}
                     style={{ width: `${itemPercentage}%` }}
                   />
@@ -183,24 +185,24 @@ export function BillingSettings({
                 <div className="flex justify-between text-xs font-medium">
                   <span>Collections</span>
                   <span>
-                    {collectionCount} / 3 collections
+                    {collectionCount} / {maxCollections} collections
                   </span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                   <div
                     className={`h-full transition-all duration-300 ${
-                      collectionCount >= 3 ? "bg-destructive" : "bg-primary"
+                      collectionCount >= maxCollections ? "bg-destructive" : "bg-primary"
                     }`}
                     style={{ width: `${collectionPercentage}%` }}
                   />
-                </div>
+                </div>      
               </div>
             </div>
           </div>
 
           {/* Upgrade Buttons */}
           <div className="flex flex-wrap items-center gap-3">
-            <Button
+            <Button className="w-full sm:w-auto"
               onClick={() => handleUpgrade("monthly")}
               disabled={loadingAction !== null}
             >
@@ -209,7 +211,7 @@ export function BillingSettings({
               )}
               Upgrade $8/mo
             </Button>
-            <Button
+            <Button className="w-full sm:w-auto"
               variant="outline"
               onClick={() => handleUpgrade("yearly")}
               disabled={loadingAction !== null}

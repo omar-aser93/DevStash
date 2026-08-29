@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
   const origin =
     request.headers.get('origin') ||
-    process.env.NEXTAUTH_URL ||
+    process.env.AUTH_URL ||
     'http://localhost:3000';
 
   const returnUrl = `${origin}/dashboard/settings`;
