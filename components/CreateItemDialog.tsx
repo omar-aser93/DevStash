@@ -13,6 +13,8 @@ import { CodeEditor } from "@/components/CodeEditor";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { FileUpload } from "@/components/FileUpload";
 import { CollectionSelect } from "@/components/CollectionSelect";
+import { SuggestTagsButton } from "@/components/ai/SuggestTagsButton";
+import { GenerateSummaryButton } from "@/components/ai/GenerateSummaryButton";
 
 type ItemTypeName = "snippet" | "prompt" | "command" | "note" | "link" | "file" | "image";
 
@@ -122,7 +124,17 @@ export function CreateItemDialog({ open, onOpenChange, collections, isPro, }: Cr
 
           {/* Description */}
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Description</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Description</label>
+              {/* Generate Summary Button */}
+              <GenerateSummaryButton
+                title={title}
+                content={content}
+                typeName={type}
+                onAccept={(summary) => setDescription(summary)}
+                isPro={isPro}
+              />
+            </div>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -202,7 +214,20 @@ export function CreateItemDialog({ open, onOpenChange, collections, isPro, }: Cr
           )}
           {/* Tags */}
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Tags (comma-separated)</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Tags (comma-separated)</label>
+              <SuggestTagsButton
+                title={title}
+                content={content}
+                typeName={type}
+                onTagAdd={(tag) => {
+                  const current = tags.split(',').map(s => s.trim()).filter(Boolean);
+                  current.push(tag);
+                  setTags(current.join(', '));
+                }}
+                isPro={isPro} // pass from prop
+              />
+            </div>
             <Input
               value={tags}
               onChange={(e) => setTags(e.target.value)}

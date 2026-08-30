@@ -9,13 +9,14 @@ interface ItemDrawerContextType {
   openDrawer: (itemId: string) => void;
   closeDrawer: () => void;
   collections: { id: string; name: string }[];
+  isPro: boolean;
 }
 
 export const ItemDrawerContext = createContext<ItemDrawerContextType | undefined>(
   undefined
 );
 
-export function ItemDrawerProvider({ children, collections }: { children: ReactNode; collections: { id: string; name: string }[] }) {
+export function ItemDrawerProvider({ children, collections, isPro }: { children: ReactNode; collections: { id: string; name: string }[]; isPro: boolean; }) {
   const [isOpen, setIsOpen] = useState(false);
   const [itemId, setItemId] = useState<string | null>(null);
 
@@ -31,7 +32,7 @@ export function ItemDrawerProvider({ children, collections }: { children: ReactN
   };
 
   return (
-    <ItemDrawerContext.Provider value={{ isOpen, itemId, openDrawer, closeDrawer, collections }}>
+    <ItemDrawerContext.Provider value={{ isOpen, itemId, openDrawer, closeDrawer, collections, isPro }}>
       {children}
       <ItemDrawer />
     </ItemDrawerContext.Provider>

@@ -167,6 +167,12 @@ export default function SignInForm({
           />
         </div>
 
+        <div className="text-right">
+          <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            Forgot password?
+          </Link>
+        </div>
+
         <Button
           type="submit"
           className="w-full h-10 font-medium cursor-pointer"

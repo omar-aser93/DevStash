@@ -114,3 +114,9 @@ export const editorPreferencesSchema = z.object({
   theme: z.enum(["vs-dark", "monokai", "github-dark"]).default("vs-dark"),
 });
 
+
+
+/********************************************************/
+export const autoTagSchema = z.object({
+  tags: z.array(z.string()).min(1).max(8),
+});

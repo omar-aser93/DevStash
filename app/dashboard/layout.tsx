@@ -27,7 +27,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
     <div className="min-h-screen bg-background">
       <SearchProvider> 
         <EditorPreferencesProvider initialPreferences={user.editorPreferences}>
-         <ItemDrawerProvider collections={allCollections}>          
+         <ItemDrawerProvider collections={allCollections} isPro={user.isPro}>          
             <Navbar {...sidebarProps} collections={allCollections} isPro={user.isPro}/>
             <div className="flex">
               <Sidebar {...sidebarProps} />        

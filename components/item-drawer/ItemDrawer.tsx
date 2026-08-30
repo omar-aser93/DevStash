@@ -22,12 +22,15 @@ import Image from "next/image";
 import { formatFileSize } from "@/lib/utils";
 import { CollectionSelect } from "@/components/CollectionSelect";
 import Link from "next/link";
+import { SuggestTagsButton } from "@/components/ai/SuggestTagsButton";
+import { GenerateSummaryButton } from "@/components/ai/GenerateSummaryButton";
+import { OptimizePromptButton } from "@/components/ai/OptimizePromptButton";
 
 
 export function ItemDrawer() {
   const router = useRouter();        // Navigation hook
   // Item drawer states
-  const { isOpen, itemId, closeDrawer, collections } = useItemDrawer();
+  const { isOpen, itemId, closeDrawer, collections, isPro } = useItemDrawer();
   const [item, setItem] = useState<FullItem & { collectionIds: string[];} | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -238,7 +241,17 @@ export function ItemDrawer() {
 
           {/* Description */}
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Description</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Description</label>
+              {/* Generate Summary Button */}
+              <GenerateSummaryButton
+                title={formData.title || ''}
+                content={formData.content || ''}
+                typeName={item.itemType.name}
+                onAccept={(summary) => updateField("description", summary)}
+                isPro={isPro}
+              />
+            </div>
             <Textarea
               value={formData.description || ""}
               onChange={(e: { target: { value: unknown; }; }) => updateField("description", e.target.value)}
@@ -318,6 +331,14 @@ export function ItemDrawer() {
             </div>
           )}
 
+          {/* Optimize Prompt Button (only for prompts) */}
+          {item.contentType === "TEXT" && item.itemType.name.toLowerCase() === "prompt" && (
+            <OptimizePromptButton
+              content={formData.content || ''}
+              onAccept={(optimized) => updateField("content", optimized)}
+              isPro={isPro}
+            />
+          )}
           <div>
           <label className="text-xs font-medium text-muted-foreground">Collections</label>
           <CollectionSelect
@@ -330,7 +351,21 @@ export function ItemDrawer() {
                     
           {/* Tags */}
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Tags (comma-separated)</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Tags (comma-separated)</label>
+              <SuggestTagsButton
+                title={formData.title || ''}
+                content={formData.content || ''}
+                typeName={item.itemType.name}
+                onTagAdd={(tag) => {
+                  const current = formData.tags || [];
+                  const updated = [...current, tag];
+                  updateField('tags', updated);
+                  setTagInput(updated.join(', '));
+                }}
+                isPro={isPro}
+              />
+            </div>
             <Input
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
@@ -405,6 +440,8 @@ export function ItemDrawer() {
                 value={item.content || ""}
                 readOnly
                 language={item.language || "plaintext"}
+                isPro={isPro}
+                itemType={item.itemType.name.toLowerCase()}
                 height={300}
               />
             </div>

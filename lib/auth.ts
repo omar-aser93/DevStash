@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
-
+import { rateLimiters, getIP, checkRateLimit } from '@/lib/rate-limit';
+import { headers } from 'next/headers';
 import authConfig from '@/lib/auth.config';
 import { prisma } from '@/lib/prisma';
 
@@ -23,21 +24,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        // Rate limiting
+        const ip = (await headers()).get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-
-        const email = String(credentials.email).trim().toLowerCase();
+        const email = String(credentials?.email || '').toLowerCase().trim();
         const password = String(credentials.password);
+        const rateLimitKey = `${ip}:${email}`;
+        const rate = await checkRateLimit(rateLimiters.login, rateLimitKey);
+        if (!rate.success) {
+          throw new Error('Too many login attempts. Please try again later.');
+        }     
 
+        // Check if user exists
         const user = await prisma.user.findUnique({
           where: { email },
         });
-
         if (!user || !user.password) {
           return null;
         }
 
+        // Check if password is correct
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
           return null;

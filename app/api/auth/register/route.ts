@@ -1,9 +1,17 @@
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
-
+import { rateLimiters, getIP, checkRateLimit } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
+  const ip = getIP(request);
+  const rate = await checkRateLimit(rateLimiters.register, ip);
+  if (!rate.success) {
+    return NextResponse.json(
+      { error: 'Too many registration attempts. Please try again later.' },
+      { status: 429 }
+    );
+  }
   try {
     let body;
     try {
