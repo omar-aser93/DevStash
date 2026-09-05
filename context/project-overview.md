@@ -97,7 +97,7 @@ Full‑text search across:
 - Explain Code
 - Prompt optimization
 
-> AI powered by **OpenAI gpt-5-nano**
+> AI powered by **OpenAI gpt-5-nano or google 'gemini-3.5-flash-lite' **
 
 ---
 
@@ -220,7 +220,7 @@ model ItemTag {
 
 | Plan | Price           | Limits                  | Features                                        |
 | ---- | --------------- | ----------------------- | ----------------------------------------------- |
-| Free | $0              | 50 items, 3 collections | Basic search, image uploads, no AI              |
+| Free | $0              | 50 items, 5 collections | Basic search, image uploads, no AI              |
 | Pro  | $8/mo or $72/yr | Unlimited               | File uploads, custom types, AI features, export |
 
 > Stripe for subscriptions + webhooks for syncing

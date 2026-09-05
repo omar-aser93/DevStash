@@ -6,16 +6,27 @@ import { EditorPreferences } from "@/components/settings/EditorPreferences";
 import { BillingSettings } from "@/components/settings/BillingSettings";
 import { getUserUsage } from "@/lib/stripe/usage";
 import { MAX_ITEMS, MAX_COLLECTIONS } from "@/lib/stripe/usage";
+import { STRIPE_SUPPORTED_COUNTRIES } from "@/lib/utils";
+import { getUserCountry } from "@/lib/geo";
 
 export const metadata: Metadata = {
   title: "Settings | DevStash",
   description: "Manage your account settings and preferences.",
 };
 
-export default async function SettingsPage() {
+
+export default async function SettingsPage({ searchParams }: {searchParams: Promise<{ [key: string]: string | undefined }>;}) {  
   const userId = await getCurrentUserId();
   const user = await getCurrentUser(userId);
   const usage = await getUserUsage(user.id, user.isPro);
+
+  // 2 ways to get user country (either from DB (user set it on register/setting) or from IP address (Vercel/netlify/...) 
+  // we use the IP method (we set it up in lib/geo.ts utility) but we also use searchParams for testing manually (?country=US)
+  const params = await searchParams;
+  const country = (params.country || await getUserCountry()).toUpperCase();
+
+  // we got it from the docs & AI, we import it from the lib/utils.ts
+  const stripeSupported = STRIPE_SUPPORTED_COUNTRIES.includes(country);
 
   return (
     <div className="flex-1 overflow-y-auto bg-background/50 p-6 space-y-8">
@@ -45,6 +56,8 @@ export default async function SettingsPage() {
         collectionCount={usage.collectionCount}
         maxItems={MAX_ITEMS}
         maxCollections={MAX_COLLECTIONS}
+        stripeSupported={stripeSupported}
+        country={country}
       />
 
       {/* Editor Preferences */}

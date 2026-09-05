@@ -15,11 +15,19 @@ const PRO_FEATURES = [
   "Data export (JSON/ZIP)",
 ];
 
-export function UpgradePricing() {
+export function UpgradePricing({ stripeSupported }: { stripeSupported: boolean }) {
   const [isYearly, setIsYearly] = useState(false);
-  const [loadingAction, setLoadingAction] = useState<"monthly" | "yearly" | null>(null);
+  const [loadingAction, setLoadingAction] = useState<"monthly" | "yearly" | "paymob-monthly" | "paymob-yearly" | null>(null);
 
-  const handleUpgrade = async (plan: "monthly" | "yearly") => {
+  // Determine pricing based on Stripe support
+  // If Stripe is supported, use USD. Otherwise, use EGP.
+  const useUSD = stripeSupported;
+  const monthlyPrice = useUSD ? "8" : "408";
+  const yearlyPrice = useUSD ? "72" : "3669";
+  const currency = useUSD ? "$" : "EGP";
+  const yearlySave = useUSD ? "25%" : "10%";
+
+  const handleStripeUpgrade = async (plan: "monthly" | "yearly") => {
     setLoadingAction(plan);
     try {
       const res = await fetch("/api/stripe/checkout", {
@@ -45,6 +53,34 @@ export function UpgradePricing() {
     }
   };
 
+  const handlePaymobUpgrade = async (plan: "monthly" | "yearly") => {
+    setLoadingAction(plan === "monthly" ? "paymob-monthly" : "paymob-yearly");
+    try {
+      const res = await fetch("/api/paymob/intention", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to initiate payment");
+      if (data.url) window.location.href = data.url;
+      else throw new Error("No redirect URL received");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to initiate payment";
+      toast.error(message);
+      setLoadingAction(null);
+    }
+  };
+
+  const handleUpgrade = () => {
+    const plan = isYearly ? "yearly" : "monthly";
+    if (stripeSupported) {
+      handleStripeUpgrade(plan);
+    } else {
+      handlePaymobUpgrade(plan);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Toggle */}
@@ -67,7 +103,7 @@ export function UpgradePricing() {
         <span className={`text-sm font-medium ${isYearly ? "text-[#e4e4ef]" : "text-[#8888a4]"}`}>
           Yearly{" "}
           <span className="inline-block bg-linear-to-r from-[#22c55e] to-[#15803d] text-black text-[0.7rem] font-bold px-2 py-0.5 rounded-lg ml-1">
-            Save 25%
+            Save {yearlySave}
           </span>
         </span>
       </div>
@@ -105,7 +141,7 @@ export function UpgradePricing() {
           </ul>
         </div>
 
-        {/* Pro */}
+        {/* Pro card */}
         <div className="bg-linear-to-b from-blue-500/6 to-[#12121a] border border-blue-500 rounded-xl p-8 text-left relative">
           <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-linear-to-r from-blue-700 via-blue-600 to-blue-400 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
             Most Popular
@@ -113,10 +149,12 @@ export function UpgradePricing() {
           <h3 className="text-xl font-bold mb-2 text-[#e4e4ef]">Pro</h3>
           <div className="flex items-baseline gap-1">
             <span className="text-4xl font-extrabold text-[#e4e4ef]">
-              {isYearly ? "$6" : "$8"}
+              {isYearly ? yearlyPrice : monthlyPrice}
             </span>
             <span className="text-sm text-[#8888a4]">
-              {isYearly ? "/month (billed $72/yr)" : "/month"}
+              {isYearly
+                ? `${currency}/year (billed ${yearlyPrice}${currency}/yr)`
+                : `${currency}/month`}
             </span>
           </div>
           <ul className="mt-6 space-y-2 text-sm text-[#8888a4]">
@@ -129,12 +167,15 @@ export function UpgradePricing() {
           </ul>
           <Button
             className="w-full mt-6 bg-linear-to-r from-blue-700 via-blue-600 to-blue-400 text-white border-0 hover:opacity-90"
-            onClick={() => handleUpgrade(isYearly ? "yearly" : "monthly")}
+            onClick={handleUpgrade}
             disabled={loadingAction !== null}
           >
             {loadingAction && <Loader2 className="size-4 animate-spin mr-2" />}
             {loadingAction ? "Processing..." : "Upgrade Now"}
           </Button>
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            {stripeSupported ? "🔒 Secured via Stripe" : "🔒 Secured via Paymob"}
+          </p>
         </div>
       </div>
     </div>

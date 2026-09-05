@@ -13,8 +13,9 @@ interface BillingSettingsProps {
   collectionCount: number;
   maxItems: number;
   maxCollections: number;
+  stripeSupported: boolean;
+  country: string;
 }
-
 
 export function BillingSettings({
   isPro,
@@ -22,10 +23,12 @@ export function BillingSettings({
   collectionCount,
   maxItems,
   maxCollections,
+  stripeSupported,
+  country,
 }: BillingSettingsProps) {
   const searchParams = useSearchParams();
   const [loadingAction, setLoadingAction] = useState<
-    "monthly" | "yearly" | "portal" | null
+    "monthly" | "yearly" | "portal" | "paymob-monthly" | "paymob-yearly" | null
   >(null);
 
   useEffect(() => {
@@ -35,7 +38,14 @@ export function BillingSettings({
     }
   }, [searchParams]);
 
-  const handleUpgrade = async (plan: "monthly" | "yearly") => {
+  // Prices
+  const isEgypt = country === "EG";  
+  const monthlyPrice = isEgypt ? "408" : "8";
+  const yearlyPrice = isEgypt ? "3669" : "72";
+  const yearlySave = isEgypt ? "10%" : "25%";
+
+  // Stripe handler
+  const handleStripeUpgrade = async (plan: "monthly" | "yearly") => {
     setLoadingAction(plan);
     try {
       const res = await fetch("/api/stripe/checkout", {
@@ -62,6 +72,7 @@ export function BillingSettings({
     }
   };
 
+  // Stripe billing portal
   const handleManageBilling = async () => {
     setLoadingAction("portal");
     try {
@@ -87,8 +98,32 @@ export function BillingSettings({
     }
   };
 
-  const itemPercentage = Math.min(Math.round((itemCount / maxItems ) * 100), 100);
-  const collectionPercentage = Math.min( Math.round((collectionCount / maxCollections) * 100), 100 );
+  // Paymob handler
+  const handlePaymobUpgrade = async (plan: "monthly" | "yearly") => {
+    setLoadingAction(plan === "monthly" ? "paymob-monthly" : "paymob-yearly");
+    try {
+      const res = await fetch("/api/paymob/intention", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to initiate payment");
+      if (data.url) window.location.href = data.url;
+      else throw new Error("No redirect URL received");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to initiate payment";
+      toast.error(message);
+      setLoadingAction(null);
+    }
+  };
+
+  const itemPercentage = Math.min(Math.round((itemCount / maxItems) * 100), 100);
+  const collectionPercentage = Math.min(
+    Math.round((collectionCount / maxCollections) * 100),
+    100
+  );
 
   return (
     <section className="rounded-xl border bg-card/40 p-6 space-y-6">
@@ -195,32 +230,69 @@ export function BillingSettings({
                     }`}
                     style={{ width: `${collectionPercentage}%` }}
                   />
-                </div>      
+                </div>
               </div>
             </div>
           </div>
 
           {/* Upgrade Buttons */}
           <div className="flex flex-wrap items-center gap-3">
-            <Button className="w-full sm:w-auto"
-              onClick={() => handleUpgrade("monthly")}
-              disabled={loadingAction !== null}
-            >
-              {loadingAction === "monthly" && (
-                <Loader2 className="size-4 animate-spin mr-2" />
-              )}
-              Upgrade $8/mo
-            </Button>
-            <Button className="w-full sm:w-auto"
-              variant="outline"
-              onClick={() => handleUpgrade("yearly")}
-              disabled={loadingAction !== null}
-            >
-              {loadingAction === "yearly" && (
-                <Loader2 className="size-4 animate-spin mr-2" />
-              )}
-              Upgrade $72/yr (save 25%)
-            </Button>
+            {stripeSupported ? (
+              // Stripe buttons (USD)
+              <>
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={() => handleStripeUpgrade("monthly")}
+                  disabled={loadingAction !== null}
+                >
+                  {loadingAction === "monthly" && (
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                  )}
+                  Upgrade ${monthlyPrice}/mo
+                </Button>
+                <Button
+                  className="w-full sm:w-auto"
+                  variant="outline"
+                  onClick={() => handleStripeUpgrade("yearly")}
+                  disabled={loadingAction !== null}
+                >
+                  {loadingAction === "yearly" && (
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                  )}
+                  Upgrade ${yearlyPrice}/yr (save {yearlySave})
+                </Button>
+              </>
+            ) : (
+              // Paymob buttons (EGP)
+              <>
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={() => handlePaymobUpgrade("monthly")}
+                  disabled={loadingAction !== null}
+                >
+                  {loadingAction === "paymob-monthly" && (
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                  )}
+                  Upgrade {monthlyPrice} EGP/mo
+                </Button>
+                <Button
+                  className="w-full sm:w-auto"
+                  variant="outline"
+                  onClick={() => handlePaymobUpgrade("yearly")}
+                  disabled={loadingAction !== null}
+                >
+                  {loadingAction === "paymob-yearly" && (
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                  )}
+                  Upgrade {yearlyPrice} EGP/yr (save {yearlySave})
+                </Button>
+              </>
+            )}
+            <p className="text-xs text-muted-foreground w-full mt-1">
+              {stripeSupported
+                ? "🔒 Secured via Stripe"
+                : "🔒 Secured via Paymob (local payment)"}
+            </p>
           </div>
         </div>
       )}

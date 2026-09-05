@@ -53,3 +53,29 @@ export function getEnvNumber(name: string, fallback: number) {
 
   return value;
 }
+
+
+
+// Official Stripe-supported countries for merchant accounts
+export const STRIPE_SUPPORTED_COUNTRIES = [
+  // North America
+  'US', 'CA', 'MX',
+  // Western Europe
+  'GB', 'IE', 'FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH', 'LU',
+  // Northern Europe
+  'DK', 'FI', 'NO', 'SE', 'IS',
+  // Southern Europe
+  'PT', 'GR', 'MT', 'CY',
+  // Eastern Europe / Baltics
+  'EE', 'LV', 'LT', 'PL', 'CZ', 'SK', 'HU', 'RO', 'BG', 'HR', 'SI',
+  // Other European microstates
+  'LI', 'GI', 'AD', 'MC', 'SM', 'VA',
+  // Asia-Pacific
+  'AU', 'NZ', 'JP', 'SG', 'HK', 'MY', 'TH', 'PH', 'VN', 'ID', 'KR', 'TW',
+  // Middle East
+  'AE', 'IL', 'SA', 'KW', 'QA', 'BH', 'OM', 'JO', 'LB',
+  // Latin America
+  'BR', 'CL', 'CO', 'CR', 'DO', 'EC', 'GT', 'HN', 'PA', 'PE', 'UY',
+  // Africa (only South Africa currently, but check Stripe updates)
+  'ZA',
+];
