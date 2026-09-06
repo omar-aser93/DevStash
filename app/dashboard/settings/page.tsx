@@ -8,6 +8,7 @@ import { getUserUsage } from "@/lib/stripe/usage";
 import { MAX_ITEMS, MAX_COLLECTIONS } from "@/lib/stripe/usage";
 import { STRIPE_SUPPORTED_COUNTRIES } from "@/lib/utils";
 import { getUserCountry } from "@/lib/geo";
+import { getUserEntitlement, getUserSubscriptionDetails } from "@/lib/billing/entitlement";
 
 export const metadata: Metadata = {
   title: "Settings | DevStash",
@@ -17,8 +18,12 @@ export const metadata: Metadata = {
 
 export default async function SettingsPage({ searchParams }: {searchParams: Promise<{ [key: string]: string | undefined }>;}) {  
   const userId = await getCurrentUserId();
-  const user = await getCurrentUser(userId);
-  const usage = await getUserUsage(user.id, user.isPro);
+  const [user, subscriptionDetails] = await Promise.all([
+    getCurrentUser(userId),
+    getUserSubscriptionDetails(userId),
+  ]);
+  const hasProAccess = await getUserEntitlement(user.id);
+  const usage = await getUserUsage(user.id, hasProAccess);
 
   // 2 ways to get user country (either from DB (user set it on register/setting) or from IP address (Vercel/netlify/...) 
   // we use the IP method (we set it up in lib/geo.ts utility) but we also use searchParams for testing manually (?country=US)
@@ -51,13 +56,15 @@ export default async function SettingsPage({ searchParams }: {searchParams: Prom
            
       {/* Billing & Subscription */}
       <BillingSettings
-        isPro={user.isPro}
+        isPro={hasProAccess}
         itemCount={usage.itemCount}
         collectionCount={usage.collectionCount}
         maxItems={MAX_ITEMS}
         maxCollections={MAX_COLLECTIONS}
         stripeSupported={stripeSupported}
         country={country}
+        subscriptionProvider={subscriptionDetails.provider}
+        periodEnd={subscriptionDetails.currentPeriodEnd?.toISOString() ?? null}
       />
 
       {/* Editor Preferences */}

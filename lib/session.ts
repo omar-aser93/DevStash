@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getUserEntitlement } from "@/lib/billing/entitlement";
 
 export interface SessionUser {
   id: string;
@@ -37,20 +38,22 @@ export async function getCurrentUserId(): Promise<string> {
  * Retrieves the user's profile information from the database or active session.
  */
 export async function getCurrentUser(userId: string): Promise<SessionUser> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      image: true,
-      createdAt: true,
-      password: true,
-      isAdmin: true,
-      isPro: true,
-      editorPreferences: true,
-    },
-  });
+  const [user, isPro] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        createdAt: true,
+        password: true,
+        isAdmin: true,
+        editorPreferences: true,
+      },
+    }),
+    getUserEntitlement(userId),
+  ]);
 
   if (user) {
     return {
@@ -61,7 +64,7 @@ export async function getCurrentUser(userId: string): Promise<SessionUser> {
       createdAt: user.createdAt,
       hasPassword: !!user.password,
       isAdmin: user.isAdmin,
-      isPro: user.isPro,
+      isPro,
       editorPreferences: user.editorPreferences as SessionUser['editorPreferences'],
     };
   }

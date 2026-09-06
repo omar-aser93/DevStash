@@ -122,10 +122,12 @@ export async function POST(request: Request) {
       cancel_url: `${origin}/dashboard/settings`,
       metadata: {
         userId: user.id,
+        plan,
       },
       subscription_data: {
         metadata: {
           userId: user.id,
+          plan,
         },
       },
     });

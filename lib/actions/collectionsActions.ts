@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createCollectionSchema, updateCollectionSchema } from "@/lib/validators";
 import { canCreateCollection, MAX_COLLECTIONS } from "@/lib/stripe/usage";
+import { getUserEntitlement } from "@/lib/billing/entitlement";
 
 
 export async function createCollection(data: unknown) {
@@ -20,7 +21,7 @@ export async function createCollection(data: unknown) {
 
   const { name, description, defaultTypeId } = result.data;
   const userId = session.user.id;
-  const isPro = session.user.isPro ?? false;
+  const isPro = await getUserEntitlement(userId);
 
   const allowed = await canCreateCollection(userId, isPro);
   if (!allowed) {

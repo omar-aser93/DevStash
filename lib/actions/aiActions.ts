@@ -5,6 +5,7 @@ import { generateText, Output } from 'ai';
 import { AI_MODEL, SYSTEM_PROMPTS } from '@/lib/ai';
 import { checkRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { autoTagSchema } from '../validators';
+import { getUserEntitlement } from '@/lib/billing/entitlement';
 
 // Helper to format reset time
 function formatResetTime(reset: Date): string {
@@ -31,7 +32,7 @@ export async function suggestTags(input: {
   }
 
   // Pro gating
-  const isPro = session.user.isPro ?? false;
+  const isPro = await getUserEntitlement(session.user.id);
 
   if (!isPro) {
     return {
@@ -106,7 +107,7 @@ export async function explainCode(input: {
   }
 
   // Pro gating
-  const isPro = session.user.isPro ?? false;
+  const isPro = await getUserEntitlement(session.user.id);
 
   if (!isPro) {
     return {
@@ -168,7 +169,8 @@ export async function generateSummary(input: {
 }) {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
-  if (!session.user.isPro) return { success: false, error: 'AI features require a Pro subscription' };
+  const isPro = await getUserEntitlement(session.user.id);
+  if (!isPro) return { success: false, error: 'AI features require a Pro subscription' };
 
   const rate = await checkRateLimit(rateLimiters.aiFeatures, session.user.id);
   if (!rate.success) return { success: false, error: `AI rate limit reached. Try again in ${formatResetTime(rate.reset)}.`, };
@@ -194,7 +196,8 @@ export async function generateSummary(input: {
 export async function optimizePrompt(input: { content: string }) {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
-  if (!session.user.isPro) return { success: false, error: 'AI features require a Pro subscription' };
+  const isPro = await getUserEntitlement(session.user.id);
+  if (!isPro) return { success: false, error: 'AI features require a Pro subscription' };
 
   const rate = await checkRateLimit(rateLimiters.aiFeatures, session.user.id);
   if (!rate.success) return { success: false, error: `AI rate limit reached. Try again in ${formatResetTime(rate.reset)}.` };

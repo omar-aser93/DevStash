@@ -1,147 +1,7 @@
-// import { NextResponse } from "next/server";
-// import { auth } from "@/lib/auth";
-// import { prisma } from "@/lib/prisma";
-
-// const PAYMOB_SECRET_KEY = process.env.PAYMOB_SECRET_KEY!;
-// const PAYMOB_PUBLIC_KEY = process.env.PAYMOB_PUBLIC_KEY!;
-// const PAYMOB_INTEGRATION_ID = process.env.PAYMOB_INTEGRATION_ID!;
-
-// const PAYMOB_API_URL =
-//   process.env.PAYMOB_API_URL || "https://accept.paymob.com";
-
-// const PLANS = {
-//   monthly: {
-//     amount: 40800, // 408 EGP
-//     currency: "EGP",
-//   },
-//   yearly: {
-//     amount: 366900, // 3669 EGP
-//     currency: "EGP",
-//   },
-// } as const;
-
-// type Plan = keyof typeof PLANS;
-
-// export async function POST(request: Request) {
-//   const session = await auth();
-
-//   if (!session?.user?.id) {
-//     return NextResponse.json(
-//       { error: "Unauthorized" },
-//       { status: 401 }
-//     );
-//   }
-
-//   const body = await request.json();
-//   const plan = body?.plan as Plan;
-
-//   if (!plan || !(plan in PLANS)) {
-//     return NextResponse.json(
-//       { error: "Invalid plan" },
-//       { status: 400 }
-//     );
-//   }
-
-//   const user = await prisma.user.findUnique({
-//     where: { id: session.user.id },
-//     select: {
-//       id: true,
-//       email: true,
-//       name: true,
-//     },
-//   });
-
-//   if (!user) {
-//     return NextResponse.json(
-//       { error: "User not found" },
-//       { status: 404 }
-//     );
-//   }
-
-//   const selectedPlan = PLANS[plan];
-
-//   try {
-//     const merchantOrderId = `devstash_${user.id}_${Date.now()}`;
-
-//     const response = await fetch(
-//       `${PAYMOB_API_URL}/api/v1/intention/`,
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Token ${PAYMOB_SECRET_KEY}`,
-//         },
-//         body: JSON.stringify({
-//           amount: selectedPlan.amount,
-//           currency: selectedPlan.currency,
-
-//           payment_methods: [
-//             Number(PAYMOB_INTEGRATION_ID),
-//           ],
-
-//           special_reference: merchantOrderId,
-
-//           notification_url: `${process.env.AUTH_URL}/api/webhooks/paymob`,
-//           redirection_url: `${process.env.AUTH_URL}/dashboard/settings?upgraded=true`,
-
-//           items: [],
-
-//           billing_data: {
-//             email: user.email,
-//             first_name:
-//               user.name?.split(" ")[0] || "User",
-//             last_name:
-//               user.name?.split(" ").slice(1).join(" ") || "User",
-//             phone_number: "01000000000",
-//           },
-//         }),
-//       }
-//     );
-
-//     const data = await response.json();
-
-//     if (!response.ok) {
-//       console.error("Paymob error:", data);
-
-//       return NextResponse.json(
-//         {
-//           error: "Failed to create Paymob payment",
-//           details: data,
-//         },
-//         { status: 500 }
-//       );
-//     }
-
-//     const clientSecret = data.client_secret;
-
-//     if (!clientSecret) {
-//       throw new Error(
-//         "Paymob did not return a client_secret"
-//       );
-//     }
-
-//     const checkoutUrl =
-//       `${PAYMOB_API_URL}/unifiedcheckout/` +
-//       `?publicKey=${encodeURIComponent(PAYMOB_PUBLIC_KEY)}` +
-//       `&clientSecret=${encodeURIComponent(clientSecret)}`;
-
-//     return NextResponse.json({
-//       url: checkoutUrl,
-//     });
-//   } catch (error) {
-//     console.error("Paymob checkout error:", error);
-
-//     return NextResponse.json(
-//       { error: "Failed to create payment" },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PaymentPlan, PaymentProvider, PaymentStatus } from "@/prisma/generated/prisma/client";
 
 const PAYMOB_SECRET_KEY = process.env.PAYMOB_SECRET_KEY!;
 const PAYMOB_PUBLIC_KEY = process.env.PAYMOB_PUBLIC_KEY!;
@@ -157,6 +17,11 @@ const PLANS = {
 } as const;
 
 type Plan = keyof typeof PLANS;
+
+const PAYMENT_PLANS: Record<Plan, PaymentPlan> = {
+  monthly: PaymentPlan.MONTHLY,
+  yearly: PaymentPlan.YEARLY,
+};
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -179,12 +44,25 @@ export async function POST(request: Request) {
   }
 
   const selectedPlan = PLANS[plan];
-  const merchantOrderId = `devstash_${user.id}_${Date.now()}`;
+  const payment = await prisma.payment.create({
+    data: {
+      userId: user.id,
+      provider: PaymentProvider.PAYMOB,
+      plan: PAYMENT_PLANS[plan],
+      amount: selectedPlan.amount,
+      currency: selectedPlan.currency,
+      status: PaymentStatus.PENDING,
+    },
+    select: { id: true },
+  });
+  const merchantReference = `paymob_${payment.id}`;
+  await prisma.payment.update({
+    where: { id: payment.id },
+    data: { merchantReference },
+  });
 
   try {
-    const url = `${PAYMOB_API_URL}/v1/intention/`; // now includes /api
-    console.log(`📦 Paymob request URL: ${url}`);
-
+    const url = `${PAYMOB_API_URL}/v1/intention/`;
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -195,7 +73,7 @@ export async function POST(request: Request) {
         amount: selectedPlan.amount,
         currency: selectedPlan.currency,
         payment_methods: [Number(PAYMOB_INTEGRATION_ID)],
-        special_reference: merchantOrderId,
+        special_reference: merchantReference,
         notification_url: `${process.env.AUTH_URL}/api/webhooks/paymob`,
         redirection_url: `${process.env.AUTH_URL}/dashboard/settings?upgraded=true`,
         items: [],
@@ -211,17 +89,12 @@ export async function POST(request: Request) {
     const text = await response.text();
 
     if (!response.ok) {
-      console.error("❌ Paymob error response:", text);
-      let details = {};
-      try {
-        details = JSON.parse(text);
-      } catch {
-        details = { raw: text.slice(0, 200) };
-      }
+      console.error("[Paymob Intention] Provider request failed", {
+        status: response.status,
+      });
       return NextResponse.json(
         {
           error: "Failed to create Paymob payment",
-          details,
         },
         { status: response.status }
       );
@@ -234,7 +107,6 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: "Paymob returned invalid JSON",
-          raw: text.slice(0, 200),
         },
         { status: 500 }
       );
@@ -251,8 +123,8 @@ export async function POST(request: Request) {
       `&clientSecret=${encodeURIComponent(clientSecret)}`;
 
     return NextResponse.json({ url: checkoutUrl });
-  } catch (error) {
-    console.error("❌ Paymob checkout error:", error);
+  } catch {
+    console.error("[Paymob Intention] Request failed");
     return NextResponse.json(
       { error: "Failed to create payment" },
       { status: 500 }

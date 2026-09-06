@@ -7,6 +7,7 @@ import { createItemSchema, updateItemSchema } from "@/lib/validators";
 import { Prisma } from "@/prisma/generated/prisma/client";
 import { deleteFileFromR2 } from "@/lib/r2";
 import { canCreateItem, MAX_ITEMS } from "@/lib/stripe/usage";
+import { getUserEntitlement } from "@/lib/billing/entitlement";
 
 
 // Helper to resolve item type from name (system or user-owned)
@@ -34,7 +35,7 @@ export async function createItem(data: unknown) {
 
   const { typeName, title, description, tags, content, url, language, fileUrl, fileName, fileSize, fileKey, collectionIds } = result.data;
   const userId = session.user.id;
-  const isPro = session.user.isPro ?? false;
+  const isPro = await getUserEntitlement(userId);
 
   // 1. Pro type check
   const normalizedType = typeName.toLowerCase();

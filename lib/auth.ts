@@ -3,10 +3,11 @@ import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
-import { rateLimiters, getIP, checkRateLimit } from '@/lib/rate-limit';
+import { rateLimiters, checkRateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
 import authConfig from '@/lib/auth.config';
 import { prisma } from '@/lib/prisma';
+import { getUserEntitlement } from '@/lib/billing/entitlement';
 
 // @auth/prisma-adapter's public types currently target Prisma 6, while this project uses Prisma 7 with a Neon driver adapter. Their runtime APIs match.
 const authPrisma = prisma as unknown as Parameters<typeof PrismaAdapter>[0];
@@ -66,11 +67,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.sub = user.id;
       }
       if (token.sub) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.sub },
-          select: { isPro: true, isAdmin: true },
-        });
-        token.isPro = dbUser?.isPro ?? false;
+        const [dbUser, isEntitled] = await Promise.all([
+          prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { isAdmin: true },
+          }),
+          getUserEntitlement(token.sub),
+        ]);
+        token.isPro = isEntitled;
         token.isAdmin = dbUser?.isAdmin ?? false;
       }
       return token;

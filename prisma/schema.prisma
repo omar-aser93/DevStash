@@ -35,6 +35,8 @@ model User {
   accounts    Account[]
   sessions    Session[]
   blogPosts   BlogPost[]
+  subscriptions Subscription[]
+  payments Payment[]
 
   @@map("users")
 }
@@ -224,4 +226,76 @@ model BlogPost {
   @@index([slug])
   @@index([published])
   @@map("blog_posts")
+}
+
+
+
+
+
+// ============================================
+// SUBSCRIPTION
+// ============================================
+
+model Subscription {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade )
+  provider PaymentProvider
+  plan PaymentPlan
+  status SubscriptionStatus
+  currentPeriodStart DateTime
+  currentPeriodEnd DateTime
+  providerSubscriptionId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+  @@index([userId, provider])
+  @@index([status])
+  @@unique([provider, providerSubscriptionId])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id String @id @default(cuid())
+  userId String
+  user User @relation( fields: [userId], references: [id], onDelete: Cascade )
+  provider PaymentProvider
+  plan PaymentPlan
+  amount Int
+  currency String
+  status PaymentStatus @default(PENDING)
+  providerTransactionId String?
+  providerOrderId String?
+  merchantReference String? @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+  @@unique([provider, providerTransactionId])
+  @@map("payments")
+}
+
+
+enum PaymentProvider {
+  STRIPE
+  PAYMOB
+}
+
+enum PaymentPlan {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  EXPIRED
 }

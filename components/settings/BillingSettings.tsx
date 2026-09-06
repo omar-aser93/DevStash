@@ -14,7 +14,9 @@ interface BillingSettingsProps {
   maxItems: number;
   maxCollections: number;
   stripeSupported: boolean;
-  country: string;
+  country?: string;
+  subscriptionProvider?: "STRIPE" | "PAYMOB" | null;
+  periodEnd?: string | null;
 }
 
 export function BillingSettings({
@@ -23,8 +25,9 @@ export function BillingSettings({
   collectionCount,
   maxItems,
   maxCollections,
-  stripeSupported,
-  country,
+  stripeSupported,  
+  subscriptionProvider,
+  periodEnd,
 }: BillingSettingsProps) {
   const searchParams = useSearchParams();
   const [loadingAction, setLoadingAction] = useState<
@@ -39,10 +42,10 @@ export function BillingSettings({
   }, [searchParams]);
 
   // Prices
-  const isEgypt = country === "EG";  
-  const monthlyPrice = isEgypt ? "408" : "8";
-  const yearlyPrice = isEgypt ? "3669" : "72";
-  const yearlySave = isEgypt ? "10%" : "25%";
+  const useUSD = stripeSupported;
+  const monthlyPrice = useUSD ? "8" : "408";
+  const yearlyPrice = useUSD ? "72" : "3669";
+  const yearlySave = useUSD ? "25%" : "10%";
 
   // Stripe handler
   const handleStripeUpgrade = async (plan: "monthly" | "yearly") => {
@@ -144,14 +147,13 @@ export function BillingSettings({
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {isPro
-                ? "Manage your DevStash Pro subscription and invoices."
-                : "Upgrade to DevStash Pro for unlimited items, collections, and file uploads."}
+             {isPro ? subscriptionProvider === "STRIPE" ? "Manage your DevStash Pro subscription and billing." : "Your DevStash Pro plan is active."
+              : "Upgrade to DevStash Pro for unlimited items, collections, and file uploads."}
             </p>
           </div>
         </div>
 
-        {isPro && (
+        {isPro && subscriptionProvider === "STRIPE" && (
           <Button
             variant="outline"
             onClick={handleManageBilling}
@@ -163,6 +165,11 @@ export function BillingSettings({
             )}
             Manage Billing
           </Button>
+        )}
+        {isPro && subscriptionProvider === "PAYMOB" && periodEnd && (
+          <Badge variant="outline" className="self-start sm:self-auto text-xs py-1 px-3">
+            Active until {new Date(periodEnd).toLocaleDateString()}
+          </Badge>
         )}
       </div>
 
@@ -187,7 +194,11 @@ export function BillingSettings({
             </li>
             <li className="flex items-center gap-2">
               <Check className="size-3.5 text-primary shrink-0" />
-              <span>Self-service billing & receipt portal</span>
+              <span>
+                {subscriptionProvider === "STRIPE"
+                  ? "Self-service billing & receipt portal"
+                  : "Secure payment with payment confirmation"}
+              </span>
             </li>
           </ul>
         </div>
