@@ -146,7 +146,7 @@ describe('Paymob Webhook Route', () => {
           provider: PaymentProvider.PAYMOB,
           plan: PaymentPlan.MONTHLY,
           status: SubscriptionStatus.ACTIVE,
-          providerSubscriptionId: 'paymob_sub_pay1',
+          providerSubscriptionId: null,
         }),
       })
     );
@@ -185,7 +185,8 @@ describe('Paymob Webhook Route', () => {
           userId: 'user-2',
           provider: PaymentProvider.PAYMOB,
           plan: PaymentPlan.YEARLY,
-          status: SubscriptionStatus.ACTIVE,
+          status: SubscriptionStatus.ACTIVE,          
+          providerSubscriptionId: null,
         }),
       })
     );

@@ -1,24 +1,16 @@
-# Current Feature: Billing Migration
+# Current Feature: ...
 
 ## Status
 
-In Progress
+finished
 
 ## Goals
 
-- Migrate Stripe checkout and verified webhooks to persist idempotent `Subscription` and `Payment` records while retaining legacy compatibility fields.
-- Migrate the existing one-time Paymob Intention flow to pending/paid payment records and temporary, time-limited local entitlement.
-- Establish subscription-backed entitlement and use it for application access and usage enforcement without changing current free-tier limits.
-- Preserve billing UI country routing, protect existing users, harden webhook handling, and verify each phase before final legacy-field cleanup.
+---
 
 ## Notes
 
-- Spec: `context/features/billing-agentic-implementation-spec.md`.
-- All Phases 1 through 9 are implemented and verified with 44 passing Vitest unit tests, ESLint (0 errors), and Next.js production build.
-- Provider webhooks remain the source of truth; redirects never grant Pro directly.
-- Compatibility fields (`User.isPro`, `stripeCustomerId`, `stripeSubscriptionId`) are retained to ensure zero regressions during transition.
-- Legacy Stripe users can be migrated and verified using `lib/billing/migration.ts` or `scripts/migrate-existing-billing.ts`.
-- Phase 10 final cleanup is deferred until external provider testing confirms complete operational stability.
+---
 
 ## History
 
@@ -38,3 +30,7 @@ In Progress
 - Completed Stripe Integration Phase 1: initialized Stripe Node SDK, created usage limit utilities with Vitest unit tests, updated NextAuth Session and JWT types and auth callbacks for dynamic `isPro` synchronization, and implemented Stripe Checkout and Customer Billing Portal API routes. Verified with `npm test`, `npm run lint`, and `npm run build`.
 - Completed Stripe Integration Phase 2: implemented Stripe webhook handler for checkout and subscription lifecycle events, added feature gating and free-tier limits to createItem, createCollection, and upload routes, built BillingSettings UI component with usage progress meters and Stripe Customer Portal integration, and added upgrade success toast. Verified with 18 Vitest unit tests, ESLint, and Next.js production build.
 - Completed Billing Migration Phases 1-9: unified `Subscription` and `Payment` Prisma models, Stripe & Paymob webhook migration and idempotency, unified entitlement system, application Pro check migration across actions and upload API, existing user migration tools, Paymob recurring helpers, and structured webhook logging. Verified with 44 Vitest tests, ESLint (0 errors), and Next.js production build.
+- Migrate Stripe checkout and verified webhooks to persist idempotent `Subscription` and `Payment` records while retaining legacy compatibility fields.
+- Migrated the existing one-time Paymob Intention flow to pending/paid payment records and temporary, time-limited local entitlement.
+- Established subscription-backed entitlement and use it for application access and usage enforcement without changing current free-tier limits.
+- Preserved billing UI country routing, protect existing users, harden webhook handling, and verify each phase before final legacy-field cleanup.

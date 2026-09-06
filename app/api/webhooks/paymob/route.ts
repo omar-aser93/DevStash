@@ -109,7 +109,7 @@ export async function POST(request: Request) {
 
       const start = new Date();
       const periodEnd = calculatePaymobPeriodEnd(payment.plan, start);
-      const providerSubId = `paymob_sub_${payment.id}`;
+      //const providerSubId = `paymob_sub_${payment.id}`;
 
       await prisma.$transaction(async (tx) => {
         const updated = await tx.payment.updateMany({
@@ -134,7 +134,7 @@ export async function POST(request: Request) {
             status: SubscriptionStatus.ACTIVE,
             currentPeriodStart: start,
             currentPeriodEnd: periodEnd,
-            providerSubscriptionId: providerSubId,
+            providerSubscriptionId: null,
           },
         });
 
